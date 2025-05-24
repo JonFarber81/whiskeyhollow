@@ -1,97 +1,61 @@
+"""Main game module for Western RPG.
+
+This module contains the main game class and entry point for Whiskey Hollow,
+a Western-themed RPG game featuring character creation, save/load functionality,
+and story-driven gameplay.
+"""
+
 import random
 import time
 import os
 import json
 from datetime import datetime
+from typing import Optional, List
 
-class Character:
-    def __init__(self, name=""):
-        self.name = name
-        self.level = 1
-        self.experience = 0
-        self.gold = random.randint(20, 50)
-        
-        # Core attributes (3-18 range)
-        self.vigor = 0      # Physical strength, endurance, toughness
-        self.finesse = 0    # Dexterity, agility, coordination
-        self.smarts = 0     # Intelligence, wisdom, awareness
-        
-        # Derived stats
-        self.hit_points = 0
-        self.max_hit_points = 0
-        
-        # Starting inventory
-        self.inventory = ["Worn Boots", "Tattered Hat", "Old Knife"]
-        self.weapon = "Old Knife"
-        self.armor = "Worn Clothes"
-        
-        # Game progress
-        self.location = "Dusty Creek"
-        self.quests = []
-        self.reputation = 0
+# Import the Character class from our new module
+from character import Character
 
-    def roll_attributes(self):
-        """Roll 4d6, drop lowest for each attribute"""
-        attributes = []
-        for _ in range(3):  # Only 3 attributes now
-            rolls = [random.randint(1, 6) for _ in range(4)]
-            rolls.sort(reverse=True)
-            attribute_value = sum(rolls[:3])  # Take highest 3
-            attributes.append(attribute_value)
-        
-        self.vigor = attributes[0]
-        self.finesse = attributes[1]
-        self.smarts = attributes[2]
-        
-        # Calculate derived stats
-        self.calculate_derived_stats()
-    
-    def calculate_derived_stats(self):
-        """Calculate hit points based on all three attributes"""
-        # Hit points = (Vigor + Finesse + Smarts) / 3
-        self.max_hit_points = (self.vigor + self.finesse + self.smarts) // 3
-        self.hit_points = self.max_hit_points
-    
-    def get_attribute_modifier(self, attribute):
-        """Get D&D-style modifier for an attribute"""
-        return (attribute - 10) // 2
-    
-    def display_character_sheet(self):
-        """Display formatted character information"""
-        print("\n" + "="*50)
-        print(f"CHARACTER SHEET - {self.name.upper()}")
-        print("="*50)
-        print(f"Level: {self.level}    Experience: {self.experience}")
-        print(f"Gold: ${self.gold}    Location: {self.location}")
-        print("-"*50)
-        print("ATTRIBUTES:")
-        print(f"Vigor:   {self.vigor:2d} ({self.get_attribute_modifier(self.vigor):+d})  [Physical strength & toughness]")
-        print(f"Finesse: {self.finesse:2d} ({self.get_attribute_modifier(self.finesse):+d})  [Agility & coordination]")
-        print(f"Smarts:  {self.smarts:2d} ({self.get_attribute_modifier(self.smarts):+d})  [Intelligence & awareness]")
-        print("-"*50)
-        print(f"Hit Points: {self.hit_points}/{self.max_hit_points}")
-        print(f"Weapon:     {self.weapon}")
-        print(f"Armor:      {self.armor}")
-        print("="*50)
 
 class WesternRPG:
-    def __init__(self):
-        self.player = None
-        self.game_running = True
+    """Main game class for the Western RPG.
+    
+    Handles the game loop, menus, character creation, and save/load functionality.
+    Provides the main interface between the player and the game world.
+    
+    Attributes:
+        player: The current player character (None if no character loaded).
+        game_running: Boolean flag controlling the main game loop.
+    """
+    
+    def __init__(self) -> None:
+        """Initialize the game."""
+        self.player: Optional[Character] = None
+        self.game_running: bool = True
         
-    def clear_screen(self):
-        """Clear the terminal screen"""
+    def clear_screen(self) -> None:
+        """Clear the terminal screen.
+        
+        Uses appropriate command for Windows (cls) or Unix-like systems (clear).
+        """
         os.system('cls' if os.name == 'nt' else 'clear')
     
-    def type_text(self, text, delay=0.03):
-        """Print text with typewriter effect"""
+    def type_text(self, text: str, delay: float = 0.03) -> None:
+        """Print text with typewriter effect.
+        
+        Args:
+            text: The text to display.
+            delay: Delay between characters in seconds.
+        """
         for char in text:
             print(char, end='', flush=True)
             time.sleep(delay)
         print()
     
-    def display_title_screen(self):
-        """Display ASCII art title screen"""
+    def display_title_screen(self) -> None:
+        """Display ASCII art title screen.
+        
+        Shows the game's title and subtitle in ASCII art format.
+        """
         title_art = """
 
 ██╗    ██╗██╗  ██╗██╗███████╗██╗  ██╗███████╗██╗   ██╗
@@ -120,8 +84,12 @@ class WesternRPG:
         
         print(title_art)
     
-    def main_menu(self):
-        """Display main menu and handle selection"""
+    def main_menu(self) -> None:
+        """Display main menu and handle selection.
+        
+        Main game loop that displays the menu and processes user choices
+        until the player quits the game.
+        """
         while self.game_running:
             self.clear_screen()
             self.display_title_screen()
@@ -149,8 +117,12 @@ class WesternRPG:
                 print("\nInvalid choice. Try again, stranger.")
                 time.sleep(1)
     
-    def new_game(self):
-        """Start character creation process"""
+    def new_game(self) -> None:
+        """Start character creation process.
+        
+        Handles the initial game introduction and character name input,
+        then proceeds to attribute rolling.
+        """
         self.clear_screen()
         
         print("\n" + "="*60)
@@ -176,8 +148,12 @@ class WesternRPG:
         
         self.attribute_rolling_process()
     
-    def attribute_rolling_process(self):
-        """Handle the attribute rolling with player choice"""
+    def attribute_rolling_process(self) -> None:
+        """Handle the attribute rolling with player choice.
+        
+        Allows the player to roll attributes multiple times, manually set them
+        for testing, or accept the current roll. Continues until player accepts.
+        """
         while True:
             self.clear_screen()
             print("\n" + "="*60)
@@ -194,8 +170,9 @@ class WesternRPG:
                 time.sleep(0.5)
             print("\n")
             
-            self.player.roll_attributes()
-            self.player.display_character_sheet()
+            if self.player:
+                self.player.roll_attributes()
+                self.player.display_character_sheet()
             
             print("\nDo you want to:")
             print("1. Keep these attributes")
@@ -218,11 +195,18 @@ class WesternRPG:
         
         self.finalize_character()
     
-    def manual_attribute_setting(self):
-        """Allow manual attribute setting for testing"""
+    def manual_attribute_setting(self) -> None:
+        """Allow manual attribute setting for testing.
+        
+        Prompts the player to enter specific values for each attribute,
+        useful for testing specific character builds.
+        """
         print("\nManual Attribute Setting (Enter values 3-18)")
         attributes = ['vigor', 'finesse', 'smarts']
         
+        if not self.player:
+            return
+            
         for attr in attributes:
             while True:
                 try:
@@ -237,8 +221,15 @@ class WesternRPG:
         
         self.player.calculate_derived_stats()
     
-    def finalize_character(self):
-        """Complete character creation"""
+    def finalize_character(self) -> None:
+        """Complete character creation.
+        
+        Displays the final character sheet, shows starting equipment,
+        saves the character, and provides transition to main game.
+        """
+        if not self.player:
+            return
+            
         self.clear_screen()
         print("\n" + "="*60)
         print("CHARACTER CREATION COMPLETE".center(60))
@@ -254,7 +245,7 @@ class WesternRPG:
         for item in self.player.inventory:
             print(f"  - {item}")
         
-        print(f"\nStarting gold: ${self.player.gold}")
+        print(f"\nStarting dollars: ${self.player.dollars}")
         
         input("\nPress Enter to begin your adventure...")
         
@@ -265,29 +256,21 @@ class WesternRPG:
         print("\n[Game would continue here...]")
         input("Press Enter to return to main menu...")
     
-    def save_character(self):
-        """Save character data to file"""
+    def save_character(self) -> None:
+        """Save character data to file.
+        
+        Creates a saves directory if needed and saves character data
+        as JSON with timestamp.
+        """
+        if not self.player:
+            return
+            
         if not os.path.exists('saves'):
             os.makedirs('saves')
         
-        save_data = {
-            'name': self.player.name,
-            'level': self.player.level,
-            'experience': self.player.experience,
-            'gold': self.player.gold,
-            'vigor': self.player.vigor,
-            'finesse': self.player.finesse,
-            'smarts': self.player.smarts,
-            'hit_points': self.player.hit_points,
-            'max_hit_points': self.player.max_hit_points,
-            'inventory': self.player.inventory,
-            'weapon': self.player.weapon,
-            'armor': self.player.armor,
-            'location': self.player.location,
-            'quests': self.player.quests,
-            'reputation': self.player.reputation,
-            'save_date': datetime.now().isoformat()
-        }
+        # Use the new to_dict method from Character class
+        save_data = self.player.to_dict()
+        save_data['save_date'] = datetime.now().isoformat()
         
         filename = f"saves/{self.player.name.lower().replace(' ', '_')}_save.json"
         with open(filename, 'w') as f:
@@ -295,8 +278,12 @@ class WesternRPG:
         
         print(f"\nGame saved as: {filename}")
     
-    def load_game(self):
-        """Load a saved game"""
+    def load_game(self) -> None:
+        """Load a saved game.
+        
+        Lists available save files and allows player to select one to load.
+        Handles cases where no save files exist.
+        """
         if not os.path.exists('saves'):
             print("\nNo saved games found.")
             time.sleep(2)
@@ -326,18 +313,20 @@ class WesternRPG:
             print("Invalid input.")
             time.sleep(1)
     
-    def load_character_from_file(self, filename):
-        """Load character from save file"""
+    def load_character_from_file(self, filename: str) -> None:
+        """Load character from save file.
+        
+        Args:
+            filename: Path to the save file to load.
+        """
         try:
             with open(filename, 'r') as f:
                 save_data = json.load(f)
             
-            self.player = Character(save_data['name'])
-            
-            # Load all attributes
-            for key, value in save_data.items():
-                if hasattr(self.player, key):
-                    setattr(self.player, key, value)
+            # Create character and load from dictionary
+            name = save_data.get('name', 'Unknown')
+            self.player = Character(name)
+            self.player.from_dict(save_data)
             
             print(f"\nGame loaded successfully!")
             print(f"Welcome back, {self.player.name}!")
@@ -351,8 +340,11 @@ class WesternRPG:
             print(f"\nError loading save file: {e}")
             time.sleep(2)
     
-    def show_credits(self):
-        """Display game credits"""
+    def show_credits(self) -> None:
+        """Display game credits.
+        
+        Shows information about the game and its developer.
+        """
         self.clear_screen()
         print("\n" + "="*50)
         print("CREDITS".center(50))
@@ -363,16 +355,24 @@ class WesternRPG:
         print("\n" + "="*50)
         input("\nPress Enter to return to main menu...")
     
-    def quit_game(self):
-        """Exit the game"""
+    def quit_game(self) -> None:
+        """Exit the game.
+        
+        Sets the game_running flag to False to exit the main loop.
+        """
         print("\nThanks for playing, partner!")
         print("See you on the frontier...")
         self.game_running = False
 
-def main():
-    """Main game entry point"""
+
+def main() -> None:
+    """Main game entry point.
+    
+    Creates and starts the main game instance.
+    """
     game = WesternRPG()
     game.main_menu()
+
 
 if __name__ == "__main__":
     main()
