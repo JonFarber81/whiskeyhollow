@@ -124,7 +124,7 @@ class Character:
             category_color = "bright_magenta"
         
         # Display age category with styling
-        console.print(f"\n[bold {category_color}]📅 Age Category: {category}[/bold {category_color}]")
+        console.print(f"\n[bold {category_color}]Age Category: {category}[/bold {category_color}]")
         
         # Create effects summary table
         effects_table = Table(box=box.SIMPLE, border_style="gold1", show_header=False)
@@ -167,7 +167,7 @@ class Character:
         console.print(Panel(
             "[bold green]✨ Age effects applied successfully![/bold green]\n"
             f"[sandy_brown]{self.name} is ready for adventure![/sandy_brown]",
-            title="[bold gold1]🌟 TRANSFORMATION COMPLETE[/bold gold1]",
+            title="[bold gold1]TRANSFORMATION COMPLETE[/bold gold1]",
             border_style="green"
         ))
     
@@ -188,9 +188,8 @@ class Character:
         setattr(self, chosen_attr, old_value + 1)
         new_value = getattr(self, chosen_attr)
         
-        icon = attribute_icons.get(chosen_attr, '⭐')
         console.print(
-            f"[bold green]{icon} Boost #{boost_num}:[/bold green] "
+            f"[bold green]Boost #{boost_num}:[/bold green] "
             f"[bold cyan]{chosen_attr.title()}[/bold cyan] "
             f"[yellow]{old_value}[/yellow] → [bold yellow]{new_value}[/bold yellow]"
         )
@@ -315,7 +314,7 @@ class Character:
             self._display_skill_category("FINESSE SKILLS", finesse_skills, "yellow")
             self._display_skill_category("SMARTS SKILLS", smarts_skills, "cyan")
             if mixed_skills:
-                self._display_skill_category("⚡ MIXED SKILLS", mixed_skills, "magenta")
+                self._display_skill_category("MIXED SKILLS", mixed_skills, "magenta")
             
             console.print()
             console.print(Panel(
