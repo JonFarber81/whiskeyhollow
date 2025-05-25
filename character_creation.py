@@ -7,6 +7,7 @@ finalization with proper validation and user feedback.
 
 from typing import Dict, Optional, Tuple
 from character import Character
+from dice import roll_dice
 from display import pause_with_message
 from menus import (
     show_character_creation_intro, show_attribute_rolling_screen,
@@ -171,25 +172,8 @@ class AttributeRoller:
     
     @staticmethod
     def roll_4d6_drop_lowest() -> int:
-        """Roll 4d6 and drop the lowest die.
-        
-        Returns:
-            Sum of the three highest dice (3-18).
-        """
-        import random
-        rolls = [random.randint(1, 6) for _ in range(4)]
-        rolls.sort(reverse=True)
-        return sum(rolls[:3])
+        return roll_dice(num_dice=4, sides=6, drop_lowest=1)['result']
     
-    @staticmethod
-    def roll_3d6() -> int:
-        """Roll 3d6 straight.
-        
-        Returns:
-            Sum of three dice (3-18).
-        """
-        import random
-        return sum(random.randint(1, 6) for _ in range(3))
     
     @staticmethod
     def roll_attribute_set_standard() -> Dict[str, int]:
@@ -204,53 +188,6 @@ class AttributeRoller:
             'smarts': AttributeRoller.roll_4d6_drop_lowest()
         }
     
-    @staticmethod
-    def roll_attribute_set_heroic() -> Dict[str, int]:
-        """Roll a heroic set of attributes (reroll 1s and 2s).
-        
-        Returns:
-            Dictionary of attribute names to values.
-        """
-        import random
-        
-        def roll_heroic_die():
-            while True:
-                roll = random.randint(1, 6)
-                if roll >= 3:  # Reroll 1s and 2s
-                    return roll
-        
-        def roll_heroic_attribute():
-            rolls = [roll_heroic_die() for _ in range(4)]
-            rolls.sort(reverse=True)
-            return sum(rolls[:3])
-        
-        return {
-            'vigor': roll_heroic_attribute(),
-            'finesse': roll_heroic_attribute(),
-            'smarts': roll_heroic_attribute()
-        }
-    
-    @staticmethod
-    def create_point_buy_attributes(points: int = 27) -> Dict[str, int]:
-        """Create attributes using point buy system.
-        
-        Args:
-            points: Total points to spend (default D&D 5e standard).
-            
-        Returns:
-            Dictionary of attribute names to values.
-        """
-        # This would need interactive implementation
-        # For now, return balanced attributes
-        base_score = 10
-        points_per_attr = points // 3
-        
-        return {
-            'vigor': base_score + points_per_attr,
-            'finesse': base_score + points_per_attr,
-            'smarts': base_score + points_per_attr
-        }
-
 
 def create_new_character() -> Optional[Character]:
     """Factory function to create a new character.

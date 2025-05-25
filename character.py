@@ -7,6 +7,8 @@ or NPC in the Western-themed RPG game.
 import random
 from typing import Dict, List, Any, Optional
 
+from dice import roll_dice
+
 
 class Character:
     """Represents a character in the Western RPG game.
@@ -64,13 +66,7 @@ class Character:
         self.reputation: int = 0
 
     def _roll_starting_money(self) -> int:
-        """Roll 3d6 * 10 for starting dollars.
-        
-        Returns:
-            Starting money amount (30-180 dollars).
-        """
-        dice_total = sum(random.randint(1, 6) for _ in range(3))
-        return dice_total * 10
+        return roll_dice(num_dice=3, sides=6)['result'] * 10
 
     def roll_attributes(self) -> None:
         """Roll 4d6, drop lowest for each attribute.
