@@ -80,8 +80,10 @@ class SaveManager:
             
             return {
                 'name': data.get('name', 'Unknown'),
+                'age': data.get('age', 0),
                 'level': data.get('level', 1),
                 'dollars': data.get('dollars', 0),
+                'skill_points': data.get('skill_points', 0),
                 'save_date': data.get('save_date', 'Unknown')
             }
         except:

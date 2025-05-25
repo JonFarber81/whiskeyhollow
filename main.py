@@ -49,32 +49,66 @@ def get_character_name() -> str:
         print("Please enter a valid name (1-20 characters)")
 
 
+def get_character_age() -> int:
+    """Get character age from user."""
+    print("\nAge affects your character's abilities:")
+    print("  Young (14-22): Fewer skills, good attributes")
+    print("  Prime (23-34): Balanced growth")
+    print("  Experienced (35-52): Many skills, declining body")
+    print("  Elder (53-57): Maximum skills, frail body")
+    
+    while True:
+        try:
+            age = int(input("\nEnter character age (14-57): "))
+            if 14 <= age <= 57:
+                return age
+            else:
+                print("Age must be between 14 and 57.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+
 def create_new_character() -> Character:
     """Create a new character."""
     clear_screen()
     show_title()
     
     name = get_character_name()
-    character = Character(name)
+    age = get_character_age()
     
-    print(f"\nCreating character: {name}")
-    print("\nRolling attributes...")
+    character = Character(name)
+    character.age = age
+    
+    print(f"\nCreating character: {name}, age {age}")
+    print("\nRolling base attributes...")
     
     while True:
         character.roll_attributes()
-        character.display_character_sheet()
         
-        choice = input("\n1. Keep these stats\n2. Roll again\n3. Set manually\nChoice: ").strip()
+        print(f"\nBase attributes rolled:")
+        print(f"Vigor:   {character.vigor}")
+        print(f"Finesse: {character.finesse}")
+        print(f"Smarts:  {character.smarts}")
+        print(f"Starting money: ${character.dollars}")
+        
+        choice = input("\n1. Keep these base stats and apply age effects\n2. Roll again\n3. Set manually\nChoice: ").strip()
         
         if choice == "1":
+            # Apply age effects after base stats are accepted
+            character.apply_age_effects()
+            character.display_character_sheet()
             break
         elif choice == "2":
             continue
         elif choice == "3":
             set_manual_attributes(character)
+            character.apply_age_effects()
+            character.display_character_sheet()
             break
         else:
             print("Invalid choice, keeping current stats.")
+            character.apply_age_effects()
+            character.display_character_sheet()
             break
     
     return character
@@ -82,7 +116,7 @@ def create_new_character() -> Character:
 
 def set_manual_attributes(character: Character):
     """Set attributes manually."""
-    print("\nSet attributes manually (3-18):")
+    print("\nSet base attributes manually (3-18):")
     
     while True:
         try:
@@ -115,7 +149,9 @@ def load_character(save_manager: SaveManager) -> Character:
     for i, filename in enumerate(saves, 1):
         info = save_manager.get_save_info(filename)
         if info:
-            print(f"{i}. {info['name']} (Level {info['level']}, ${info['dollars']})")
+            age_str = f", Age {info['age']}" if 'age' in info else ""
+            skill_str = f", {info['skill_points']} SP" if 'skill_points' in info else ""
+            print(f"{i}. {info['name']} (Level {info['level']}{age_str}, ${info['dollars']}{skill_str})")
         else:
             print(f"{i}. {filename}")
     
@@ -141,7 +177,7 @@ def main():
         show_title()
         
         if current_character:
-            print(f"Current Character: {current_character.name}")
+            print(f"Current Character: {current_character.name} (Age {current_character.age})")
         
         print("\n1. Create New Character")
         print("2. Load Character")
