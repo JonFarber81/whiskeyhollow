@@ -45,10 +45,14 @@ class Character:
         self.hit_points: int = 0
         self.max_hit_points: int = 0
         
-        # Starting gear
-        self.inventory = ["Worn Boots", "Tattered Hat", "Old Knife"]
-        self.weapon: str = "Old Knife"
-        self.armor: str = "Worn Clothes"
+        # Inventory system - slot-based
+        self.inventory: Dict[str, int] = {}  # item_name: quantity
+        self.base_inventory_slots: int = 0   # Based on vigor
+        self.bonus_inventory_slots: int = 0  # From backpacks, etc.
+        
+        # Equipment slots
+        self.weapon: str = "Unarmed"
+        self.armor: str = "Clothes"
         self.location: str = "Whiskey Hollow"
 
     def roll_attributes(self) -> None:
@@ -174,7 +178,6 @@ class Character:
     def _apply_random_attribute_boost(self, boost_num: int) -> None:
         """Apply a random +1 attribute boost (max 18) with Rich visualization."""
         attributes = ['vigor', 'finesse', 'smarts']
-        attribute_icons = {'vigor': '🥊', 'finesse': '🎯', 'smarts': '🧠'}
         
         # Only consider attributes that aren't already at max
         available_attributes = [attr for attr in attributes if getattr(self, attr) < 18]
@@ -259,12 +262,14 @@ class Character:
         )
     
     def calculate_derived_stats(self) -> None:
-        """Calculate hit points based on attributes."""
+        """Calculate hit points and inventory capacity based on attributes."""
         self.max_hit_points = (self.vigor + self.finesse + self.smarts) // 3
         self.hit_points = self.max_hit_points
+        # Base inventory slots equal to vigor score
+        self.base_inventory_slots = self.vigor
     
     def allocate_skill_points(self) -> None:
-        """Enhanced skill point allocation with Rich UI."""
+        """Enhanced skill point allocation with Rich UI and skill descriptions."""
         if self.skill_points <= 0:
             console.print("[yellow]No skill points to allocate.[/yellow]")
             return
@@ -318,16 +323,25 @@ class Character:
             
             console.print()
             console.print(Panel(
-                "[bold]0.[/bold] Finish allocation (must spend all points)",
+                "[bold]0.[/bold] Finish allocation (must spend all points)\n"
+                "[bold]?[/bold] Show skill descriptions",
                 border_style="green",
                 padding=(0, 1)
             ))
             
             try:
-                choice = IntPrompt.ask(
-                    f"\nSelect skill to improve (0 to finish, {self.skill_points} points left)",
+                user_input = Prompt.ask(
+                    f"\nSelect skill to improve, ? for help (0 to finish, {self.skill_points} points left)",
                     console=console
                 )
+                
+                # Handle help command
+                if user_input == "?" or user_input.lower() == "help":
+                    self._show_skill_descriptions(skills_list)
+                    continue
+                
+                # Convert to integer for skill selection
+                choice = int(user_input)
                 
                 if choice == 0:
                     if self.skill_points > 0:
@@ -345,6 +359,11 @@ class Character:
                         console.print(f"[red]❌ {skill.name} is already at maximum level (3).[/red]")
                         Prompt.ask("Press Enter to continue", default="", console=console)
                         continue
+                    
+                    # Show skill info before adding point
+                    console.print(f"\n[bold cyan]📖 {skill.name}[/bold cyan]")
+                    console.print(f"[dim]{skill.description}[/dim]")
+                    console.print(f"[yellow]Attribute: {skill.attribute.title()}[/yellow]")
                     
                     # Add point to skill with animation
                     self.skills[skill_key] = current_level + 1
@@ -369,17 +388,124 @@ class Character:
                             time.sleep(0.01)
                     
                     console.print(f"[bold cyan]{skill.name}[/bold cyan] is now level [bold yellow]{self.skills[skill_key]}[/bold yellow]!")
-                    time.sleep(1)
+                    time.sleep(1.5)  # Give more time to read the description
                 
                 else:
                     console.print("[red]Invalid selection.[/red]")
                     Prompt.ask("Press Enter to continue", default="", console=console)
                     
-            except (ValueError, KeyboardInterrupt):
-                console.print("[yellow]Invalid input.[/yellow]")
+            except ValueError:
+                console.print("[red]Invalid input. Enter a number, or ? for help.[/red]")
                 Prompt.ask("Press Enter to continue", default="", console=console)
+            except KeyboardInterrupt:
+                console.print("[yellow]Skill allocation cancelled.[/yellow]")
+                break
         
         console.print(f"\n[bold green]🎉 Skill allocation complete for {self.name}![/bold green]")
+    
+    def _show_skill_descriptions(self, skills_list: list):
+        """Display all skill descriptions in a comprehensive help screen."""
+        console.clear()
+        
+        # Header
+        header = Panel(
+            f"[bold gold1]Skill Reference Guide[/bold gold1]\n"
+            f"[sandy_brown]Choose your path wisely, {self.name}[/sandy_brown]",
+            title="[bold cyan]📚 SKILL DESCRIPTIONS[/bold cyan]",
+            border_style="cyan"
+        )
+        console.print(header)
+        
+        # Group skills by attribute for organized display
+        skill_groups = {
+            'Vigor': [],
+            'Finesse': [],
+            'Smarts': [],
+            'Mixed': []
+        }
+        
+        for i, (key, skill) in enumerate(skills_list, 1):
+            skill_entry = {
+                'number': i,
+                'name': skill.name,
+                'description': skill.description,
+                'current_level': self.skills.get(key, 0)
+            }
+            
+            if 'vigor' in skill.attribute.lower() and 'finesse' not in skill.attribute.lower():
+                skill_groups['Vigor'].append(skill_entry)
+            elif 'finesse' in skill.attribute.lower() and 'vigor' not in skill.attribute.lower():
+                skill_groups['Finesse'].append(skill_entry)
+            elif 'smarts' in skill.attribute.lower():
+                skill_groups['Smarts'].append(skill_entry)
+            else:
+                skill_groups['Mixed'].append(skill_entry)
+        
+        # Display each group
+        group_colors = {
+            'Vigor': 'red',
+            'Finesse': 'yellow', 
+            'Smarts': 'cyan',
+            'Mixed': 'magenta'
+        }
+        
+        for group_name, skills in skill_groups.items():
+            if not skills:
+                continue
+                
+            color = group_colors[group_name]
+            
+            # Create table for this attribute group
+            table = Table(
+                title=f"{group_name} Skills",
+                box=box.ROUNDED,
+                border_style=color,
+                show_header=True,
+                header_style=f"bold {color}"
+            )
+            table.add_column("#", style="dim", width=3, justify="center")
+            table.add_column("Skill", style=f"bold {color}", width=20)
+            table.add_column("Level", justify="center", width=6)
+            table.add_column("Description", style="dim white", min_width=40)
+            
+            for skill in skills:
+                # Show current level with visual indicator (all 5 levels)
+                level = skill['current_level']
+                if level > 0:
+                    level_display = f"[bold yellow]{level}[/bold yellow]/5"
+                else:
+                    level_display = "[dim]0[/dim]/5"
+                
+                table.add_row(
+                    str(skill['number']),
+                    skill['name'],
+                    level_display,
+                    skill['description']
+                )
+            
+            console.print(table)
+            console.print()  # Add spacing between tables
+        
+        # Footer with instructions
+        footer = Panel(
+            "[bold white]💡 Skill Progression:[/bold white]\n"
+            "• [dim]Level 0:[/dim] Untrained - Basic attempts possible\n"
+            "• [dim yellow]Level 1:[/dim] Novice - Some training and practice\n"
+            "• [yellow]Level 2:[/yellow] Trained - Regular practice and experience\n" 
+            "• [bold yellow]Level 3:[/bold yellow] Skilled - Maximum at character creation\n"
+            "• [bold green]Level 4:[/bold green] Expert - Advanced training (post-creation)\n"
+            "• [bold bright_green]Level 5:[/bold bright_green] Master - Legendary expertise (post-creation)\n\n"
+            "[bold white]💡 Training Tips:[/bold white]\n"
+            "• Choose skills that match your character's background and goals\n"
+            "• Higher levels give significantly better chances of success\n"
+            "• Skills can be improved beyond level 3 through gameplay",
+            title="[bold gold1]Training Wisdom[/bold gold1]",
+            border_style="gold1"
+        )
+        console.print(footer)
+        
+        Prompt.ask("\n[bold sandy_brown]Press Enter to return to skill selection[/bold sandy_brown]", 
+                  default="", console=console)
     
     def _display_skill_category(self, title: str, skills_list: list, color: str):
         """Display a category of skills in a Rich table."""
@@ -397,16 +523,25 @@ class Character:
             skill = skill_info['skill']
             level = skill_info['level']
             
-            # Create progress visualization
-            progress_bar = "●" * level + "○" * (3 - level)
+            # Create progress visualization showing all 5 levels
+            progress_bar = "●" * level + "○" * (5 - level)
             
-            # Color the progress based on level
-            if level == 3:
+            # Color the progress based on level with expanded scale
+            if level == 5:
+                level_style = "bold bright_green"
+                progress_style = "bold bright_green"
+            elif level == 4:
                 level_style = "bold green"
                 progress_style = "bold green"
-            elif level >= 1:
+            elif level == 3:
                 level_style = "bold yellow"
+                progress_style = "bold yellow"
+            elif level >= 2:
+                level_style = "yellow"
                 progress_style = "yellow"
+            elif level == 1:
+                level_style = "dim yellow"
+                progress_style = "dim yellow"
             else:
                 level_style = "dim"
                 progress_style = "dim"
@@ -423,34 +558,6 @@ class Character:
     def get_skill_level(self, skill_key: str) -> int:
         """Get the level of a specific skill."""
         return self.skills.get(skill_key, 0)
-    
-    def display_skills(self) -> None:
-        """Display character's skills with Rich formatting."""
-        if not self.skills:
-            console.print("[dim]No skills learned yet.[/dim]")
-            return
-        
-        console.print("\n[bold green]SKILLS:[/bold green]")
-        skills_by_attr = {'vigor': [], 'finesse': [], 'smarts': [], 'vigor/finesse': []}
-        
-        for skill_key, level in self.skills.items():
-            skill = skill_manager.get_skill(skill_key)
-            if skill:
-                attr_key = skill.attribute.lower()
-                if attr_key not in skills_by_attr:
-                    skills_by_attr[attr_key] = []
-                skills_by_attr[attr_key].append((skill.name, level))
-        
-        for attr, skill_list in skills_by_attr.items():
-            if skill_list:
-                console.print(f"  [bold cyan]{attr.title()}:[/bold cyan]")
-                for skill_name, level in sorted(skill_list):
-                    level_display = "●" * level + "○" * (3 - level)
-                    console.print(f"    {skill_name:<15} [yellow]{level_display}[/yellow] ({level}/3)")
-    
-    def get_attribute_modifier(self, attribute: int) -> int:
-        """Get D&D-style modifier for an attribute."""
-        return (attribute - 10) // 2
     
     def display_character_sheet(self) -> None:
         """Display character sheet with Rich formatting and layout."""
@@ -509,7 +616,7 @@ class Character:
             skills_table = Table(box=box.ROUNDED, border_style="green", title="Learned Skills")
             skills_table.add_column("Skill", style="bold green", min_width=18)
             skills_table.add_column("Level", justify="center", style="bold yellow", width=6)
-            skills_table.add_column("Progress", justify="center", width=10)
+            skills_table.add_column("Level", justify="center", width=10)
             skills_table.add_column("Attribute", style="dim cyan", width=10)
             
             sorted_skills = sorted(self.skills.items(), key=lambda x: skill_manager.get_skill(x[0]).name if skill_manager.get_skill(x[0]) else x[0])
@@ -517,18 +624,24 @@ class Character:
             for skill_key, level in sorted_skills:
                 skill = skill_manager.get_skill(skill_key)
                 if skill:
-                    progress_bar = "●" * level + "○" * (3 - level)
+                    # Show all 5 possible levels (current max is 3 at creation, but can grow to 5)
+                    progress_bar = "●" * level + "○" * (5 - level)
                     # Color progress based on level
-                    if level == 3:
-                        progress_style = "bold green"
+                    if level == 5:
+                        progress_style = "bold bright_green"  # Master level
+                    elif level == 4:
+                        progress_style = "bold green"         # Expert level  
+                    elif level == 3:
+                        progress_style = "bold yellow"        # Skilled level
                     elif level >= 2:
-                        progress_style = "bold yellow"
+                        progress_style = "yellow"             # Trained level
+                    elif level == 1:
+                        progress_style = "dim yellow"         # Novice level
                     else:
-                        progress_style = "dim white"
+                        progress_style = "dim white"          # Untrained
                     
                     skills_table.add_row(
                         skill.name,
-                        str(level),
                         Text(progress_bar, style=progress_style),
                         skill.attribute
                     )
@@ -546,11 +659,19 @@ class Character:
             f"[bold red]❤️  Health:[/bold red] {self.hit_points}/{self.max_hit_points}\n"
             f"[bold yellow]🔫 Weapon:[/bold yellow] {self.weapon}\n"
             f"[bold blue]🛡️  Armor:[/bold blue] {self.armor}\n"
-            f"[bold gold1]💰 Money:[/bold gold1] ${self.dollars}"
+            f"[bold gold1]💰 Money:[/bold gold1] ${self.dollars}\n"
+            f"{self.display_inventory_status()}"
         )
         
-        if self.inventory and len(self.inventory) > 3:  # More than starting gear
-            status_content += f"\n[bold cyan]🎒 Items:[/bold cyan] {len(self.inventory)} items"
+        # Show inventory contents if any
+        if self.inventory:
+            status_content += f"\n[bold cyan]📦 Carrying:[/bold cyan]"
+            for item_name, quantity in sorted(self.inventory.items()):
+                slots_used = self._get_item_slot_usage(item_name)
+                if quantity > 1:
+                    status_content += f"\n  • {item_name} x{quantity} ({slots_used * quantity} slots)"
+                else:
+                    status_content += f"\n  • {item_name} ({slots_used} slot{'s' if slots_used != 1 else ''})"
         
         status_panel = Panel(
             status_content,
@@ -565,6 +686,113 @@ class Character:
         # Footer with flavor text
         footer_text = f"[dim italic]The legend of {self.name} continues to grow in the dusty streets of {self.location}...[/dim italic]"
         console.print(f"\n{footer_text}")
+    
+    def get_attribute_modifier(self, attribute: int) -> int:
+        """Get D&D-style modifier for an attribute."""
+        return (attribute - 10) // 2
+    
+    # Inventory Management Methods
+    def get_total_inventory_slots(self) -> int:
+        """Get total available inventory slots."""
+        return self.base_inventory_slots + self.bonus_inventory_slots
+    
+    def get_used_inventory_slots(self) -> int:
+        """Calculate how many inventory slots are currently used."""
+        # For now, each item takes 1 slot unless specified otherwise
+        # This will be expanded when we add item definitions
+        used_slots = 0
+        for item_name, quantity in self.inventory.items():
+            # Placeholder: all items take 1 slot each for now
+            # Later we'll look up item definitions for actual slot usage
+            item_slots = self._get_item_slot_usage(item_name)
+            used_slots += item_slots * quantity
+        return used_slots
+    
+    def get_available_inventory_slots(self) -> int:
+        """Get number of unused inventory slots."""
+        return self.get_total_inventory_slots() - self.get_used_inventory_slots()
+    
+    def _get_item_slot_usage(self, item_name: str) -> int:
+        """Get how many slots an item uses (placeholder for future item system)."""
+        # Placeholder logic - will be replaced with proper item definitions
+        item_name_lower = item_name.lower()
+        
+        # Heavy weapons
+        if 'rifle' in item_name_lower or 'shotgun' in item_name_lower:
+            return 3
+        elif 'pistol' in item_name_lower or 'revolver' in item_name_lower:
+            return 2
+        # Armor
+        elif 'armor' in item_name_lower or 'vest' in item_name_lower:
+            return 2
+        # Backpacks (special case - they add slots rather than use them)
+        elif 'backpack' in item_name_lower or 'saddlebags' in item_name_lower:
+            return 0  # Backpacks don't use slots, they add them
+        # Default: most items use 1 slot
+        else:
+            return 1
+    
+    def can_add_item(self, item_name: str, quantity: int = 1) -> bool:
+        """Check if character has enough inventory space for an item."""
+        item_slots = self._get_item_slot_usage(item_name)
+        slots_needed = item_slots * quantity
+        return self.get_available_inventory_slots() >= slots_needed
+    
+    def add_item(self, item_name: str, quantity: int = 1) -> bool:
+        """Add item to inventory if there's space."""
+        if not self.can_add_item(item_name, quantity):
+            return False
+        
+        if item_name in self.inventory:
+            self.inventory[item_name] += quantity
+        else:
+            self.inventory[item_name] = quantity
+        
+        # Handle special items that modify inventory capacity
+        if 'backpack' in item_name.lower():
+            self.bonus_inventory_slots += 5  # Backpack adds 5 slots
+        elif 'saddlebags' in item_name.lower():
+            self.bonus_inventory_slots += 8  # Saddlebags add more slots
+        
+        return True
+    
+    def remove_item(self, item_name: str, quantity: int = 1) -> bool:
+        """Remove item from inventory."""
+        if item_name not in self.inventory:
+            return False
+        
+        if self.inventory[item_name] < quantity:
+            return False
+        
+        # Handle special items that modify inventory capacity
+        if 'backpack' in item_name.lower():
+            self.bonus_inventory_slots -= 5 * quantity
+        elif 'saddlebags' in item_name.lower():
+            self.bonus_inventory_slots -= 8 * quantity
+        
+        self.inventory[item_name] -= quantity
+        if self.inventory[item_name] <= 0:
+            del self.inventory[item_name]
+        
+        return True
+    
+    def display_inventory_status(self) -> str:
+        """Get a formatted string showing inventory status."""
+        used = self.get_used_inventory_slots()
+        total = self.get_total_inventory_slots()
+        available = self.get_available_inventory_slots()
+        
+        if available <= 2:
+            color = "red"
+            status = "Nearly Full!"
+        elif available <= 5:
+            color = "yellow"
+            status = "Getting Heavy"
+        else:
+            color = "green"
+            status = "Plenty of Room"
+        
+        return f"[{color}]🎒 Inventory: {used}/{total} slots ({status})[/{color}]"
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert character to dictionary for saving."""
@@ -581,7 +809,9 @@ class Character:
             'hit_points': self.hit_points,
             'max_hit_points': self.max_hit_points,
             'skills': self.skills,  # Only saves skills with points > 0
-            'inventory': self.inventory,
+            'inventory': self.inventory,  # Now a dict of item_name: quantity
+            'base_inventory_slots': self.base_inventory_slots,
+            'bonus_inventory_slots': self.bonus_inventory_slots,
             'weapon': self.weapon,
             'armor': self.armor,
             'location': self.location
@@ -592,3 +822,14 @@ class Character:
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        
+        # Handle legacy save files that might have old inventory format
+        if isinstance(self.inventory, list):
+            # Convert old list format to new dict format
+            old_inventory = self.inventory
+            self.inventory = {}
+            for item in old_inventory:
+                if item in self.inventory:
+                    self.inventory[item] += 1
+                else:
+                    self.inventory[item] = 1
