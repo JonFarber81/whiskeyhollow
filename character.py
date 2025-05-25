@@ -44,6 +44,7 @@ class Character:
         # Derived stats
         self.hit_points: int = 0
         self.max_hit_points: int = 0
+        self.movement: int = 0    # Movement in yards per turn
         
         # Inventory system - slot-based
         self.inventory: Dict[str, int] = {}  # item_name: quantity
@@ -165,7 +166,7 @@ class Character:
                     time.sleep(0.5)
                 self._make_vigor_test(i + 1)
         
-        # Recalculate derived stats
+        # Recalculate derived stats (including movement) after all attribute changes
         self.calculate_derived_stats()
         
         console.print(Panel(
@@ -262,11 +263,13 @@ class Character:
         )
     
     def calculate_derived_stats(self) -> None:
-        """Calculate hit points and inventory capacity based on attributes."""
+        """Calculate hit points, movement, and inventory capacity based on attributes."""
         self.max_hit_points = (self.vigor + self.finesse + self.smarts) // 3
         self.hit_points = self.max_hit_points
         # Base inventory slots equal to vigor score
         self.base_inventory_slots = self.vigor
+        # Movement is average of vigor and finesse (yards per turn)
+        self.movement = (self.vigor + self.finesse) // 2
     
     def allocate_skill_points(self) -> None:
         """Enhanced skill point allocation with Rich UI and skill descriptions."""
@@ -616,7 +619,7 @@ class Character:
             skills_table = Table(box=box.ROUNDED, border_style="green", title="Learned Skills")
             skills_table.add_column("Skill", style="bold green", min_width=18)
             skills_table.add_column("Level", justify="center", style="bold yellow", width=6)
-            skills_table.add_column("Level", justify="center", width=10)
+            skills_table.add_column("Progress", justify="center", width=10)
             skills_table.add_column("Attribute", style="dim cyan", width=10)
             
             sorted_skills = sorted(self.skills.items(), key=lambda x: skill_manager.get_skill(x[0]).name if skill_manager.get_skill(x[0]) else x[0])
@@ -642,6 +645,7 @@ class Character:
                     
                     skills_table.add_row(
                         skill.name,
+                        str(level),
                         Text(progress_bar, style=progress_style),
                         skill.attribute
                     )
@@ -657,6 +661,7 @@ class Character:
         # Status panel
         status_content = (
             f"[bold red]❤️  Health:[/bold red] {self.hit_points}/{self.max_hit_points}\n"
+            f"[bold cyan]🏃 Movement:[/bold cyan] {self.movement} yards/turn\n"
             f"[bold yellow]🔫 Weapon:[/bold yellow] {self.weapon}\n"
             f"[bold blue]🛡️  Armor:[/bold blue] {self.armor}\n"
             f"[bold gold1]💰 Money:[/bold gold1] ${self.dollars}\n"
@@ -808,6 +813,7 @@ class Character:
             'smarts': self.smarts,
             'hit_points': self.hit_points,
             'max_hit_points': self.max_hit_points,
+            'movement': self.movement,  # Add movement to save data
             'skills': self.skills,  # Only saves skills with points > 0
             'inventory': self.inventory,  # Now a dict of item_name: quantity
             'base_inventory_slots': self.base_inventory_slots,
@@ -822,6 +828,10 @@ class Character:
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        
+        # Handle legacy save files that might not have movement
+        if not hasattr(self, 'movement') or self.movement == 0:
+            self.calculate_derived_stats()  # This will recalculate movement
         
         # Handle legacy save files that might have old inventory format
         if isinstance(self.inventory, list):
