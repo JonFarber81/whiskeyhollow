@@ -5,15 +5,26 @@ a Western-themed RPG game featuring character creation, save/load functionality,
 and story-driven gameplay.
 """
 
-import random
-import time
 import os
-import json
-from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
-# Import the Character class from our new module
-from character import Character
+# Import core modules
+from models.character import Character
+from models.game_state import GameState, GamePhase, create_new_game_state
+
+# Import game systems
+from game.character_creation import create_new_character
+
+# Import utilities
+from utils.file_manager import SaveFileManager, get_available_saves
+
+# Import UI modules
+from ui.display import clear_screen, pause_with_message
+from ui.menus import (
+    show_main_menu, show_credits_screen, show_quit_message, show_no_saves_message,
+    show_load_success_message, show_load_error_message, show_game_placeholder,
+    show_save_game_list
+)
 
 
 class WesternRPG:
@@ -23,66 +34,16 @@ class WesternRPG:
     Provides the main interface between the player and the game world.
     
     Attributes:
-        player: The current player character (None if no character loaded).
+        game_state: Current game state including player, world, and progress.
+        save_manager: Handles all save/load operations.
         game_running: Boolean flag controlling the main game loop.
     """
     
     def __init__(self) -> None:
         """Initialize the game."""
-        self.player: Optional[Character] = None
+        self.game_state: GameState = create_new_game_state()
+        self.save_manager: SaveFileManager = SaveFileManager()
         self.game_running: bool = True
-        
-    def clear_screen(self) -> None:
-        """Clear the terminal screen.
-        
-        Uses appropriate command for Windows (cls) or Unix-like systems (clear).
-        """
-        os.system('cls' if os.name == 'nt' else 'clear')
-    
-    def type_text(self, text: str, delay: float = 0.03) -> None:
-        """Print text with typewriter effect.
-        
-        Args:
-            text: The text to display.
-            delay: Delay between characters in seconds.
-        """
-        for char in text:
-            print(char, end='', flush=True)
-            time.sleep(delay)
-        print()
-    
-    def display_title_screen(self) -> None:
-        """Display ASCII art title screen.
-        
-        Shows the game's title and subtitle in ASCII art format.
-        """
-        title_art = """
-
-██╗    ██╗██╗  ██╗██╗███████╗██╗  ██╗███████╗██╗   ██╗
-██║    ██║██║  ██║██║██╔════╝██║ ██╔╝██╔════╝╚██╗ ██╔╝
-██║ █╗ ██║███████║██║███████╗█████╔╝ █████╗   ╚████╔╝ 
-██║███╗██║██╔══██║██║╚════██║██╔═██╗ ██╔══╝    ╚██╔╝  
-╚███╔███╔╝██║  ██║██║███████║██║  ██╗███████╗   ██║   
- ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝   
-
-██╗  ██╗ ██████╗ ██╗     ██╗      ██████╗ ██╗    ██╗
-██║  ██║██╔═══██╗██║     ██║     ██╔═══██╗██║    ██║
-███████║██║   ██║██║     ██║     ██║   ██║██║ █╗ ██║
-██╔══██║██║   ██║██║     ██║     ██║   ██║██║███╗██║
-██║  ██║╚██████╔╝███████╗███████╗╚██████╔╝╚███╔███╔╝
-╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝ 
-
-                    ~ RECKONING ~
-                    
-        ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-        ░                                      ░
-        ░    A tale of vengeance in the West   ░
-        ░                                      ░
-        ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-        """
-        
-        print(title_art)
     
     def main_menu(self) -> None:
         """Display main menu and handle selection.
@@ -91,19 +52,9 @@ class WesternRPG:
         until the player quits the game.
         """
         while self.game_running:
-            self.clear_screen()
-            self.display_title_screen()
+            self.game_state.change_phase(GamePhase.MAIN_MENU)
             
-            print("\n\n" + "="*50)
-            print("MAIN MENU".center(50))
-            print("="*50)
-            print("1. New Game")
-            print("2. Load Game")
-            print("3. Credits")
-            print("4. Quit")
-            print("="*50)
-            
-            choice = input("\nWhat's your choice, partner? ").strip()
+            choice = show_main_menu(self)
             
             if choice == "1":
                 self.new_game()
@@ -115,168 +66,32 @@ class WesternRPG:
                 self.quit_game()
             else:
                 print("\nInvalid choice. Try again, stranger.")
-                time.sleep(1)
+                pause_with_message()
     
     def new_game(self) -> None:
-        """Start character creation process.
+        """Start a new game with character creation.
         
-        Handles the initial game introduction and character name input,
-        then proceeds to attribute rolling.
+        Creates a new character using the character creation system,
+        initializes a fresh game state, and transitions to the main game.
         """
-        self.clear_screen()
+        self.game_state.change_phase(GamePhase.CHARACTER_CREATION)
         
-        print("\n" + "="*60)
-        print("WELCOME TO THE OLD WEST".center(60))
-        print("="*60)
+        # Use the character creation system
+        character = create_new_character()
         
-        self.type_text("\nYou step off the dusty stagecoach in the frontier town of Whiskey Hollow.")
-        self.type_text("The sun beats down mercilessly as you adjust your hat and look around.")
-        self.type_text("This is not where your story begins, but it is where your vengeance does...")
-        
-        # Character name input
-        print("\n" + "-"*50)
-        while True:
-            name = input("What do folks call you? ").strip()
-            if name and len(name) <= 20:
-                break
-            print("Enter a valid name (1-20 characters).")
-        
-        self.player = Character(name)
-        
-        print(f"\nWell howdy, {name}! Time to see what you're made of...")
-        input("\nPress Enter to roll your attributes...")
-        
-        self.attribute_rolling_process()
-    
-    def attribute_rolling_process(self) -> None:
-        """Handle the attribute rolling with player choice.
-        
-        Allows the player to roll attributes multiple times, manually set them
-        for testing, or accept the current roll. Continues until player accepts.
-        """
-        while True:
-            self.clear_screen()
-            print("\n" + "="*60)
-            print("ROLLING YOUR ATTRIBUTES".center(60))
-            print("="*60)
-            print("Rolling 4d6 and taking the highest 3 for each attribute...")
-            print("\nPress Enter to roll...")
-            input()
+        if character:
+            # Set up new game state with the created character
+            self.game_state = create_new_game_state()
+            self.game_state.set_player(character)
             
-            # Animate the rolling process
-            print("\nRolling dice...")
-            for i in range(3):
-                print("." * (i + 1), end="", flush=True)
-                time.sleep(0.5)
-            print("\n")
+            # Save the initial game state
+            self._save_game_state()
             
-            if self.player:
-                self.player.roll_attributes()
-                self.player.display_character_sheet()
-            
-            print("\nDo you want to:")
-            print("1. Keep these attributes")
-            print("2. Roll again")
-            print("3. Manually set attributes (for testing)")
-            
-            choice = input("\nYour choice: ").strip()
-            
-            if choice == "1":
-                break
-            elif choice == "2":
-                continue
-            elif choice == "3":
-                self.manual_attribute_setting()
-                break
-            else:
-                print("Invalid choice. Keeping current attributes.")
-                time.sleep(1)
-                break
-        
-        self.finalize_character()
-    
-    def manual_attribute_setting(self) -> None:
-        """Allow manual attribute setting for testing.
-        
-        Prompts the player to enter specific values for each attribute,
-        useful for testing specific character builds.
-        """
-        print("\nManual Attribute Setting (Enter values 3-18)")
-        attributes = ['vigor', 'finesse', 'smarts']
-        
-        if not self.player:
-            return
-            
-        for attr in attributes:
-            while True:
-                try:
-                    value = int(input(f"{attr.capitalize()}: "))
-                    if 3 <= value <= 18:
-                        setattr(self.player, attr, value)
-                        break
-                    else:
-                        print("Value must be between 3 and 18.")
-                except ValueError:
-                    print("Please enter a valid number.")
-        
-        self.player.calculate_derived_stats()
-    
-    def finalize_character(self) -> None:
-        """Complete character creation.
-        
-        Displays the final character sheet, shows starting equipment,
-        saves the character, and provides transition to main game.
-        """
-        if not self.player:
-            return
-            
-        self.clear_screen()
-        print("\n" + "="*60)
-        print("CHARACTER CREATION COMPLETE".center(60))
-        print("="*60)
-        
-        self.player.display_character_sheet()
-        
-        print(f"\nWelcome to Whiskey Hollow, {self.player.name}!")
-        self.type_text("You've got a few dollars in your pocket, some basic gear, and a world of possibilities ahead.")
-        
-        # Starting equipment flavor text
-        print(f"\nYou're carrying:")
-        for item in self.player.inventory:
-            print(f"  - {item}")
-        
-        print(f"\nStarting dollars: ${self.player.dollars}")
-        
-        input("\nPress Enter to begin your adventure...")
-        
-        # Save the character
-        self.save_character()
-        
-        # Here you would transition to the main game
-        print("\n[Game would continue here...]")
-        input("Press Enter to return to main menu...")
-    
-    def save_character(self) -> None:
-        """Save character data to file.
-        
-        Creates a saves directory if needed and saves character data
-        as JSON with timestamp.
-        """
-        if not self.player:
-            return
-            
-        if not os.path.exists('saves'):
-            os.makedirs('saves')
-        
-        # Use the new to_dict method from Character class
-        save_data = self.player.to_dict()
-        save_data['save_date'] = datetime.now().isoformat()
-        
-        filename = f"saves/{self.player.name.lower().replace(' ', '_')}_save.json"
-        with open(filename, 'w') as f:
-            json.dump(save_data, f, indent=2)
-        
-        print(f"\nGame saved as: {filename}")
+            # Transition to main game
+            self._start_main_game()
+        else:
+            print("\nCharacter creation cancelled.")
+            pause_with_message()
     
     def load_game(self) -> None:
         """Load a saved game.
@@ -284,85 +99,139 @@ class WesternRPG:
         Lists available save files and allows player to select one to load.
         Handles cases where no save files exist.
         """
-        if not os.path.exists('saves'):
-            print("\nNo saved games found.")
-            time.sleep(2)
+        saves_with_info = get_available_saves()
+        
+        if not saves_with_info:
+            show_no_saves_message()
             return
         
-        save_files = [f for f in os.listdir('saves') if f.endswith('_save.json')]
+        # Extract just the filenames for the menu
+        save_files = [filename for filename, _ in saves_with_info]
         
-        if not save_files:
-            print("\nNo saved games found.")
-            time.sleep(2)
-            return
+        file_index = show_save_game_list(save_files)
         
-        print("\nSaved Games:")
-        for i, save_file in enumerate(save_files, 1):
-            # Extract character name from filename
-            char_name = save_file.replace('_save.json', '').replace('_', ' ').title()
-            print(f"{i}. {char_name}")
-        
-        try:
-            choice = int(input("\nSelect save file (number): "))
-            if 1 <= choice <= len(save_files):
-                self.load_character_from_file(f"saves/{save_files[choice-1]}")
-            else:
-                print("Invalid selection.")
-                time.sleep(1)
-        except ValueError:
-            print("Invalid input.")
-            time.sleep(1)
+        if file_index >= 0:
+            filename = save_files[file_index]
+            self._load_game_state_from_file(filename)
     
-    def load_character_from_file(self, filename: str) -> None:
-        """Load character from save file.
+    def _load_game_state_from_file(self, filename: str) -> None:
+        """Load complete game state from save file.
         
         Args:
-            filename: Path to the save file to load.
+            filename: Name of the save file to load.
         """
+        full_path = os.path.join(self.save_manager.save_directory, filename)
+        
         try:
-            with open(filename, 'r') as f:
+            import json
+            with open(full_path, 'r', encoding='utf-8') as f:
                 save_data = json.load(f)
             
-            # Create character and load from dictionary
-            name = save_data.get('name', 'Unknown')
-            self.player = Character(name)
-            self.player.from_dict(save_data)
+            # Load the complete game state
+            self.game_state.from_dict(save_data)
             
-            print(f"\nGame loaded successfully!")
-            print(f"Welcome back, {self.player.name}!")
-            time.sleep(2)
+            if self.game_state.player:
+                show_load_success_message(self.game_state.player.name)
+                self._start_main_game()
+            else:
+                show_load_error_message("No character data found in save file")
+                
+        except Exception as e:
+            show_load_error_message(str(e))
+    
+    def _save_game_state(self) -> bool:
+        """Save the complete game state.
+        
+        Returns:
+            True if save was successful, False otherwise.
+        """
+        if not self.game_state.player:
+            return False
+        
+        try:
+            import json
+            from datetime import datetime
             
-            # Here you would continue to the main game
-            print("\n[Game would continue here...]")
-            input("Press Enter to return to main menu...")
+            # Ensure save directory exists
+            if not os.path.exists(self.save_manager.save_directory):
+                os.makedirs(self.save_manager.save_directory)
+            
+            # Get complete game state data
+            save_data = self.game_state.to_dict()
+            
+            # Generate filename based on character name
+            character_name = self.game_state.player.name
+            safe_name = character_name.lower().replace(' ', '_').replace('/', '_').replace('\\', '_')
+            safe_name = ''.join(c for c in safe_name if c.isalnum() or c in ('_', '-'))
+            filename = f"{self.save_manager.save_directory}/{safe_name}_save.json"
+            
+            # Save the data
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, indent=2, ensure_ascii=False)
+            
+            print(f"\nGame saved as: {filename}")
+            return True
             
         except Exception as e:
-            print(f"\nError loading save file: {e}")
-            time.sleep(2)
+            print(f"\nError saving game: {str(e)}")
+            return False
+    
+    def _start_main_game(self) -> None:
+        """Start or continue the main game.
+        
+        This is where the actual gameplay would begin after character
+        creation or loading a save file.
+        """
+        if not self.game_state.player:
+            return
+        
+        # Set game phase to town exploration
+        self.game_state.change_phase(GamePhase.TOWN_EXPLORATION)
+        
+        # Move player to their current location
+        current_location = self.game_state.get_current_location_info()
+        if current_location:
+            print(f"\nYou find yourself in {current_location.name}")
+            print(current_location.description)
+        
+        # For now, show placeholder for main game
+        show_game_placeholder()
+        
+        # Here you would implement the main game loop:
+        # - Location exploration
+        # - NPC interaction
+        # - Quest system
+        # - Combat system
+        # - Inventory management
+        # etc.
     
     def show_credits(self) -> None:
-        """Display game credits.
-        
-        Shows information about the game and its developer.
-        """
-        self.clear_screen()
-        print("\n" + "="*50)
-        print("CREDITS".center(50))
-        print("="*50)
-        print("\nWhiskey Hollow - A Western RPG")
-        print("Developed by: Jon Farber")
-        print("Python Version: 3.x")
-        print("\n" + "="*50)
-        input("\nPress Enter to return to main menu...")
+        """Display game credits."""
+        show_credits_screen()
     
     def quit_game(self) -> None:
         """Exit the game.
         
         Sets the game_running flag to False to exit the main loop.
         """
-        print("\nThanks for playing, partner!")
-        print("See you on the frontier...")
+        show_quit_message()
         self.game_running = False
+    
+    def get_current_character(self) -> Optional[Character]:
+        """Get the current player character.
+        
+        Returns:
+            Current player Character or None if no character loaded.
+        """
+        return self.game_state.player
+    
+    def get_game_state(self) -> GameState:
+        """Get the current game state.
+        
+        Returns:
+            Current GameState instance.
+        """
+        return self.game_state
 
 
 def main() -> None:
