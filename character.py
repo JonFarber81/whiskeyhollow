@@ -3,6 +3,7 @@
 import random
 from typing import Dict, Any
 from dice import roll_4d6_drop_lowest, roll_starting_money
+from skills import skill_manager
 
 
 class Character:
@@ -21,6 +22,9 @@ class Character:
         self.vigor: int = 0      # Physical strength, endurance, toughness
         self.finesse: int = 0    # Dexterity, agility, coordination
         self.smarts: int = 0     # Intelligence, wisdom, awareness
+        
+        # Skills - only store skills with points > 0
+        self.skills: Dict[str, int] = {}
         
         # Derived stats
         self.hit_points: int = 0
@@ -159,6 +163,83 @@ class Character:
         self.max_hit_points = (self.vigor + self.finesse + self.smarts) // 3
         self.hit_points = self.max_hit_points
     
+    def allocate_skill_points(self) -> None:
+        """Allow player to allocate skill points to skills."""
+        if self.skill_points <= 0:
+            print("No skill points to allocate.")
+            return
+        
+        print(f"\nAllocating {self.skill_points} skill points for {self.name}")
+        
+        while self.skill_points > 0:
+            skills_list = skill_manager.display_skills_menu(self.skills, self.skill_points)
+            
+            try:
+                choice = int(input(f"\nSelect skill to improve (0 to finish, {self.skill_points} points left): "))
+                
+                if choice == 0:
+                    if self.skill_points > 0:
+                        print(f"You must spend all {self.skill_points} skill points before continuing.")
+                        input("Press Enter to continue...")
+                        continue
+                    else:
+                        break
+                
+                if 1 <= choice <= len(skills_list):
+                    skill_key, skill = skills_list[choice - 1]
+                    current_level = self.skills.get(skill_key, 0)
+                    
+                    if current_level >= 3:
+                        print(f"{skill.name} is already at maximum level (3).")
+                        input("Press Enter to continue...")
+                        continue
+                    
+                    # Add point to skill
+                    self.skills[skill_key] = current_level + 1
+                    self.skill_points -= 1
+                    
+                    print(f"\n{skill.name} increased to level {self.skills[skill_key]}!")
+                    input("Press Enter to continue...")
+                
+                else:
+                    print("Invalid selection.")
+                    input("Press Enter to continue...")
+                    
+            except ValueError:
+                print("Please enter a valid number.")
+                input("Press Enter to continue...")
+        
+        print(f"\nSkill allocation complete for {self.name}!")
+    
+    def get_skill_level(self, skill_key: str) -> int:
+        """Get the level of a specific skill."""
+        return self.skills.get(skill_key, 0)
+    
+    def display_skills(self) -> None:
+        """Display character's skills."""
+        if not self.skills:
+            print("No skills learned yet.")
+            return
+        
+        print("\nSKILLS:")
+        skills_by_attr = {'vigor': [], 'finesse': [], 'smarts': [], 'vigor/finesse': []}
+        
+        for skill_key, level in self.skills.items():
+            skill = skill_manager.get_skill(skill_key)
+            if skill:
+                attr_key = skill.attribute.lower()
+                if attr_key not in skills_by_attr:
+                    skills_by_attr[attr_key] = []
+                skills_by_attr[attr_key].append((skill.name, level))
+        
+        for attr, skill_list in skills_by_attr.items():
+            if skill_list:
+                print(f"  {attr.title()}:")
+                for skill_name, level in sorted(skill_list):
+                    level_display = "●" * level + "○" * (3 - level)
+                    print(f"    {skill_name:<15} {level_display} ({level}/3)")
+    
+    
     def get_attribute_modifier(self, attribute: int) -> int:
         """Get D&D-style modifier for an attribute."""
         return (attribute - 10) // 2
@@ -176,6 +257,8 @@ class Character:
         print(f"Vigor:   {self.vigor:2d} ({self.get_attribute_modifier(self.vigor):+d})  [Physical strength & toughness]")
         print(f"Finesse: {self.finesse:2d} ({self.get_attribute_modifier(self.finesse):+d})  [Agility & coordination]")
         print(f"Smarts:  {self.smarts:2d} ({self.get_attribute_modifier(self.smarts):+d})  [Intelligence & awareness]")
+        print("-"*50)
+        self.display_skills()
         print("-"*50)
         print(f"Hit Points: {self.hit_points}/{self.max_hit_points}")
         print(f"Weapon:     {self.weapon}")
@@ -196,6 +279,7 @@ class Character:
             'smarts': self.smarts,
             'hit_points': self.hit_points,
             'max_hit_points': self.max_hit_points,
+            'skills': self.skills,  # Only saves skills with points > 0
             'inventory': self.inventory,
             'weapon': self.weapon,
             'armor': self.armor,

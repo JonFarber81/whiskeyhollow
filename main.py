@@ -96,6 +96,12 @@ def create_new_character() -> Character:
         if choice == "1":
             # Apply age effects after base stats are accepted
             character.apply_age_effects()
+            
+            # Allocate skill points
+            print("\nNow allocating skill points...")
+            input("Press Enter to continue to skill allocation...")
+            character.allocate_skill_points()
+            
             character.display_character_sheet()
             break
         elif choice == "2":
@@ -103,11 +109,23 @@ def create_new_character() -> Character:
         elif choice == "3":
             set_manual_attributes(character)
             character.apply_age_effects()
+            
+            # Allocate skill points
+            print("\nNow allocating skill points...")
+            input("Press Enter to continue to skill allocation...")
+            character.allocate_skill_points()
+            
             character.display_character_sheet()
             break
         else:
             print("Invalid choice, keeping current stats.")
             character.apply_age_effects()
+            
+            # Allocate skill points
+            print("\nNow allocating skill points...")
+            input("Press Enter to continue to skill allocation...")
+            character.allocate_skill_points()
+            
             character.display_character_sheet()
             break
     
