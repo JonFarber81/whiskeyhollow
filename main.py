@@ -1,24 +1,18 @@
 """Simple Western RPG Character Creator with Rich Terminal UI."""
 
-import os
+import time
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.table import Table
-from rich.prompt import Prompt, IntPrompt, Confirm
+from rich.prompt import Prompt, IntPrompt
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.layout import Layout
 from rich.align import Align
-from rich.columns import Columns
-from rich.rule import Rule
 from rich import box
-import time
 
-from character import Character
+from character import Character, console  # Import shared console
 from file_manager import SaveManager
 
-# Initialize Rich console
-console = Console()
 
 def show_title():
     """Display the game title with Rich styling."""
@@ -103,8 +97,8 @@ def get_character_age() -> int:
         console.print("[red]Age must be between 14 and 57.[/red]")
 
 
-def display_attributes_with_progress(character: Character):
-    """Display character attributes with visual appeal."""
+def display_rolled_attributes(character: Character):
+    """Display character attributes after rolling."""
     attr_table = Table(title="Character Attributes", box=box.HEAVY_EDGE, border_style="gold1")
     attr_table.add_column("Attribute", style="bold cyan", justify="left")
     attr_table.add_column("Score", style="bold yellow", justify="center")
@@ -143,82 +137,6 @@ def display_attributes_with_progress(character: Character):
     console.print(f"\n💰 [bold yellow]Starting Money:[/bold yellow] ${character.dollars}")
 
 
-def create_new_character() -> Character:
-    """Create a new character with Rich UI."""
-    console.clear()
-    show_title()
-    
-    name = get_character_name()
-    age = get_character_age()
-    
-    character = Character(name)
-    character.age = age
-    
-    # Show character creation progress
-    with console.status(f"[bold gold1]Creating {name}, age {age}...[/bold gold1]", spinner="dots"):
-        time.sleep(1)  # Dramatic pause
-    
-    console.print(f"\n✨ [bold green]Character Created![/bold green] [bold sandy_brown]{name}[/bold sandy_brown], age [bold yellow]{age}[/bold yellow]")
-    
-    # Attribute rolling loop
-    while True:
-        console.print("\n [bold gold1]Rolling base attributes...[/bold gold1]")
-        
-        # Simulate rolling with progress bar
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-            transient=True
-        ) as progress:
-            task = progress.add_task("Rolling dice...", total=100)
-            for i in range(100):
-                progress.update(task, advance=1)
-                time.sleep(0.01)
-        
-        character.roll_attributes()
-        display_attributes_with_progress(character)
-        
-        # Choice menu with Rich styling
-        choices_panel = Panel(
-            "[bold]1.[/bold] Keep these stats and apply age effects\n"
-            "[bold]2.[/bold] Roll again\n"
-            "[bold]3.[/bold] Set manually",
-            title="[bold gold1]What would you like to do?[/bold gold1]",
-            border_style="gold1"
-        )
-        console.print(choices_panel)
-        
-        choice = Prompt.ask("Choice", choices=["1", "2", "3"], default="1", console=console)
-        
-        if choice == "1":
-            # Apply age effects
-            console.print("\n⏳ [bold gold1]Applying age effects...[/bold gold1]")
-            character.apply_age_effects()
-            
-            # Skill allocation
-            console.print("\n📚 [bold gold1]Time to learn some skills...[/bold gold1]")
-            Prompt.ask("Press Enter to continue to skill allocation", default="", console=console)
-            character.allocate_skill_points()
-            
-            display_character_sheet_rich(character)
-            break
-        elif choice == "2":
-            continue
-        elif choice == "3":
-            set_manual_attributes(character)
-            character.apply_age_effects()
-            
-            console.print("\n [bold gold1]Time to learn some skills...[/bold gold1]")
-            Prompt.ask("Press Enter to continue to skill allocation", default="", console=console)
-            character.allocate_skill_points()
-            
-            display_character_sheet_rich(character)
-            break
-    
-    return character
-
-
 def set_manual_attributes(character: Character):
     """Set attributes manually with Rich prompts."""
     console.print(Panel(
@@ -247,73 +165,80 @@ def set_manual_attributes(character: Character):
             return
 
 
-def display_character_sheet_rich(character: Character):
-    """Display character sheet with Rich formatting."""
+def create_new_character() -> Character:
+    """Create a new character with Rich UI."""
     console.clear()
+    show_title()
     
-    # Header
-    header = Panel(
-        f"[bold gold1]{character.name.upper()}[/bold gold1]\n"
-        f"[sandy_brown]Age {character.age} • Level {character.level} • ${character.dollars}[/sandy_brown]\n"
-        f"[dim]{character.location}[/dim]",
-        title="[bold red3]CHARACTER SHEET[/bold red3]",
-        border_style="gold1",
-        padding=(1, 2)
-    )
-    console.print(header)
+    name = get_character_name()
+    age = get_character_age()
     
-    # Create layout
-    layout = Layout()
-    layout.split_column(
-        Layout(name="attributes", size=10),
-        Layout(name="skills", size=20),
-        Layout(name="equipment", size=8)
-    )
+    character = Character(name)
+    character.age = age
     
-    # Attributes section
-    attr_table = Table(box=box.ROUNDED, border_style="cyan")
-    attr_table.add_column("Attribute", style="bold cyan")
-    attr_table.add_column("Value", justify="center", style="bold yellow")
-    attr_table.add_column("Modifier", justify="center", style="bold green")
+    # Show character creation progress
+    with console.status(f"[bold gold1]Creating {name}, age {age}...[/bold gold1]", spinner="dots"):
+        time.sleep(1)  # Dramatic pause
     
-    attr_table.add_row("Vigor", str(character.vigor), f"{character.get_attribute_modifier(character.vigor):+d}")
-    attr_table.add_row("Finesse", str(character.finesse), f"{character.get_attribute_modifier(character.finesse):+d}")
-    attr_table.add_row("Smarts", str(character.smarts), f"{character.get_attribute_modifier(character.smarts):+d}")
+    console.print(f"\n✨ [bold green]Character Created![/bold green] [bold sandy_brown]{name}[/bold sandy_brown], age [bold yellow]{age}[/bold yellow]")
     
-    layout["attributes"].update(Panel(attr_table, title="[bold cyan]Attributes[/bold cyan]"))
-    
-    # Skills section
-    if character.skills:
-        skills_table = Table(box=box.ROUNDED, border_style="green")
-        skills_table.add_column("Skill", style="bold green")
-        skills_table.add_column("Level", justify="center", style="bold yellow")
-        skills_table.add_column("Progress", justify="center")
+    # Attribute rolling loop
+    while True:
+        console.print("\n🎲 [bold gold1]Rolling base attributes...[/bold gold1]")
         
-        from skills import skill_manager
-        for skill_key, level in sorted(character.skills.items()):
-            skill = skill_manager.get_skill(skill_key)
-            if skill:
-                progress_bar = "●" * level + "○" * (3 - level)
-                skills_table.add_row(skill.name, str(level), progress_bar)
+        # Simulate rolling with progress bar
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+            transient=True
+        ) as progress:
+            task = progress.add_task("Rolling dice...", total=100)
+            for i in range(100):
+                progress.update(task, advance=1)
+                time.sleep(0.01)
         
-        layout["skills"].update(Panel(skills_table, title="[bold green]Skills[/bold green]"))
-    else:
-        layout["skills"].update(Panel("[dim]No skills learned yet[/dim]", title="[bold green]Skills[/bold green]"))
+        character.roll_attributes()
+        display_rolled_attributes(character)
+        
+        # Choice menu with Rich styling
+        choices_panel = Panel(
+            "[bold]1.[/bold] Keep these stats and apply age effects\n"
+            "[bold]2.[/bold] Roll again\n"
+            "[bold]3.[/bold] Set manually",
+            title="[bold gold1]What would you like to do?[/bold gold1]",
+            border_style="gold1"
+        )
+        console.print(choices_panel)
+        
+        choice = Prompt.ask("Choice", choices=["1", "2", "3"], default="1", console=console)
+        
+        if choice == "1":
+            # Apply age effects
+            console.print("\n⏳ [bold gold1]Applying age effects...[/bold gold1]")
+            character.apply_age_effects()
+            
+            # Skill allocation
+            console.print("\n📚 [bold gold1]Time to learn some skills...[/bold gold1]")
+            Prompt.ask("Press Enter to continue to skill allocation", default="", console=console)
+            character.allocate_skill_points()
+            
+            character.display_character_sheet()
+            break
+        elif choice == "2":
+            continue
+        elif choice == "3":
+            set_manual_attributes(character)
+            character.apply_age_effects()
+            
+            console.print("\n📚 [bold gold1]Time to learn some skills...[/bold gold1]")
+            Prompt.ask("Press Enter to continue to skill allocation", default="", console=console)
+            character.allocate_skill_points()
+            
+            character.display_character_sheet()
+            break
     
-    # Equipment section
-    equipment_info = (
-        f"[bold]❤️  Health:[/bold] {character.hit_points}/{character.max_hit_points}\n"
-        f"[bold]🔫 Weapon:[/bold] {character.weapon}\n"
-        f"[bold]🛡️  Armor:[/bold] {character.armor}\n"
-        f"[bold]💰 Money:[/bold] ${character.dollars}"
-    )
-    
-    if character.skill_points > 0:
-        equipment_info += f"\n[bold]📚 Skill Points:[/bold] {character.skill_points}"
-    
-    layout["equipment"].update(Panel(equipment_info, title="[bold sandy_brown]Status[/bold sandy_brown]"))
-    
-    console.print(layout)
+    return character
 
 
 def load_character_rich(save_manager: SaveManager) -> Character:
@@ -437,7 +362,7 @@ def main():
                 Prompt.ask("Press Enter to continue", default="", console=console)
         
         elif choice == "3" and current_character:
-            display_character_sheet_rich(current_character)
+            current_character.display_character_sheet()
             Prompt.ask("\nPress Enter to continue", default="", console=console)
         
         elif choice == "4" and current_character:

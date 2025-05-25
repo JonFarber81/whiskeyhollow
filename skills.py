@@ -32,21 +32,20 @@ class SkillManager:
             'melee_weapons': Skill('Melee Weapons', 'vigor', 'Combat with melee weapons'),
             'language': Skill('Language', 'smarts', 'Foreign languages'),
             'locksmith': Skill('Locksmith', 'finesse', 'Lock picking and mechanisms'),
-            'natural_environment': Skill('Natural Environment', 'smarts', ''),
-            'navigate': Skill('Navigate', 'Smarts'),
-            'pistols': Skill('Pistols', 'Finesse'),
-            'persuasion_and_rhetoric': Skill('Persuasion and Rhetoric', 'Smarts'),
-            'prospecting': Skill('Prospecting', 'Smarts'),
-            'repair': Skill('Repair', 'Smarts'),
-            'riding': Skill('Riding', 'Finesse'),
-            'rifles_shotguns': Skill('Rifles and Shotguns', 'Finesse'),
-            'slink': Skill('Slink', 'Finesse'),
-            'strong_arm': Skill('Strong Arm', 'Vigor', 'Ability to use threats of force and violence to coerce others'),
-            'survival': Skill('Survival', 'Smarts', 'Ability to find water, make traps, scavenge, build a shelter'),
-            'throw': Skill('Throw', 'Finesse', 'Ability to throw a rock, spear, knife, etc...'),
-            'track': Skill('Track', 'Smarts', 'Ability to track human or animal prey'),
-            'trade': Skill('Trade', 'Smarts', 'Ability to negotiate good deals when buying or selling'),
-
+            'natural_environment': Skill('Natural Environment', 'smarts', 'Wilderness survival and nature knowledge'),
+            'navigate': Skill('Navigate', 'smarts', 'Navigation and pathfinding'),
+            'pistols': Skill('Pistols', 'finesse', 'Handgun combat and accuracy'),
+            'persuasion_and_rhetoric': Skill('Persuasion and Rhetoric', 'smarts', 'Convincing others through speech'),
+            'prospecting': Skill('Prospecting', 'smarts', 'Finding valuable minerals and resources'),
+            'repair': Skill('Repair', 'smarts', 'Fixing tools, weapons, and equipment'),
+            'riding': Skill('Riding', 'finesse', 'Horseback riding and animal handling'),
+            'rifles_shotguns': Skill('Rifles and Shotguns', 'finesse', 'Long gun combat and marksmanship'),
+            'slink': Skill('Slink', 'finesse', 'Moving stealthily and avoiding detection'),
+            'strong_arm': Skill('Strong Arm', 'vigor', 'Using threats of force and violence to coerce others'),
+            'survival': Skill('Survival', 'smarts', 'Finding water, making traps, scavenging, building shelter'),
+            'throw': Skill('Throw', 'finesse', 'Throwing rocks, spears, knives, and other projectiles'),
+            'track': Skill('Track', 'smarts', 'Tracking human or animal prey'),
+            'trade': Skill('Trade', 'smarts', 'Negotiating good deals when buying or selling'),
         }
     
     def get_skill_list(self) -> List[Tuple[str, Skill]]:
@@ -65,29 +64,6 @@ class SkillManager:
     def get_skill(self, key: str) -> Skill:
         """Get a skill by its key."""
         return self.skills.get(key)
-    
-    def display_skills_menu(self, character_skills: Dict[str, int], available_points: int):
-        """Display skills menu for point allocation."""
-        print(f"\n{'='*60}")
-        print(f"SKILL ALLOCATION - {available_points} points remaining")
-        print(f"{'='*60}")
-        print("Skills are limited to 3 points maximum")
-        print("-" * 60)
-        
-        skills_list = self.get_skill_list()
-        
-        for i, (key, skill) in enumerate(skills_list, 1):
-            current_level = character_skills.get(key, 0)
-            attr_display = skill.attribute.title()
-            
-            # Show current level with visual indicators
-            level_display = "●" * current_level + "○" * (3 - current_level)
-            
-            print(f"{i:2d}. {skill.name:<15} [{attr_display:<12}] {level_display} ({current_level}/3)")
-        
-        print("-" * 60)
-        print("0. Finish allocation")
-        return skills_list
 
 
 # Global skill manager instance
