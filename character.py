@@ -311,9 +311,9 @@ class Character:
                     mixed_skills.append(skill_info)
             
             # Display skill tables
-            self._display_skill_category("🥊 VIGOR SKILLS", vigor_skills, "red")
-            self._display_skill_category("🎯 FINESSE SKILLS", finesse_skills, "yellow")
-            self._display_skill_category("🧠 SMARTS SKILLS", smarts_skills, "cyan")
+            self._display_skill_category("VIGOR SKILLS", vigor_skills, "red")
+            self._display_skill_category("FINESSE SKILLS", finesse_skills, "yellow")
+            self._display_skill_category("SMARTS SKILLS", smarts_skills, "cyan")
             if mixed_skills:
                 self._display_skill_category("⚡ MIXED SKILLS", mixed_skills, "magenta")
             
@@ -459,7 +459,7 @@ class Character:
         
         # Character header with western flair
         header_content = (
-            f"[bold gold1]{self.name.upper()}[/bold gold1] 🤠\n"
+            f"[bold gold1]{self.name.upper()}[/bold gold1]\n"
             f"[sandy_brown]Age {self.age} • Level {self.level} • Experience {self.experience}[/sandy_brown]\n"
             f"[yellow]💰 ${self.dollars}[/yellow]"
         )
@@ -471,7 +471,7 @@ class Character:
         
         header = Panel(
             header_content,
-            title="[bold red3]🌟 CHARACTER SHEET 🌟[/bold red3]",
+            title="[bold red3] CHARACTER SHEET [/bold red3]",
             border_style="gold1",
             padding=(1, 2)
         )
@@ -485,19 +485,19 @@ class Character:
         attr_table.add_column("Description", style="dim white")
         
         attr_table.add_row(
-            "🥊 Vigor", 
+            "Vigor", 
             str(self.vigor), 
             f"{self.get_attribute_modifier(self.vigor):+d}",
             "Strength & Toughness"
         )
         attr_table.add_row(
-            "🎯 Finesse", 
+            "Finesse", 
             str(self.finesse), 
             f"{self.get_attribute_modifier(self.finesse):+d}",
             "Agility & Coordination"
         )
         attr_table.add_row(
-            "🧠 Smarts", 
+            "Smarts", 
             str(self.smarts), 
             f"{self.get_attribute_modifier(self.smarts):+d}",
             "Intelligence & Awareness"
