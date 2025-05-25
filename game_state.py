@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional, Set
 from enum import Enum
 from dataclasses import dataclass, asdict
-from models.character import Character
+from character import Character
 
 
 class GamePhase(Enum):

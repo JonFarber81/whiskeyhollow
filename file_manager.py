@@ -9,7 +9,7 @@ import os
 import json
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
-from models.character import Character
+from character import Character
 
 
 class SaveFileManager:

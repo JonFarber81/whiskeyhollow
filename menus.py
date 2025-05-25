@@ -6,7 +6,7 @@ input validation, and menu display throughout the game.
 
 import time
 from typing import Callable, Dict, List, Optional
-from ui.display import (
+from display import (
     clear_screen, display_title_screen, display_menu_header, 
     display_credits, pause_with_message, get_numeric_choice
 )
@@ -162,7 +162,7 @@ def show_character_creation_intro() -> str:
     """
     clear_screen()
     
-    from ui.display import display_section_header, type_text
+    from display import display_section_header, type_text
     
     display_section_header("WELCOME TO THE OLD WEST")
     
@@ -183,7 +183,7 @@ def show_attribute_rolling_screen() -> None:
     """Display the attribute rolling screen setup."""
     clear_screen()
     
-    from ui.display import display_section_header, display_loading_animation
+    from display import display_section_header, display_loading_animation
     
     display_section_header("ROLLING YOUR ATTRIBUTES")
     print("Rolling 4d6 and taking the highest 3 for each attribute...")
@@ -226,7 +226,7 @@ def show_character_finalization(character) -> None:
     """
     clear_screen()
     
-    from ui.display import display_section_header, type_text, display_inventory, format_money
+    from display import display_section_header, type_text, display_inventory, format_money
     
     display_section_header("CHARACTER CREATION COMPLETE")
     

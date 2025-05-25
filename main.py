@@ -9,18 +9,18 @@ import os
 from typing import Optional
 
 # Import core modules
-from models.character import Character
-from models.game_state import GameState, GamePhase, create_new_game_state
+from character import Character
+from game_state import GameState, GamePhase, create_new_game_state
 
 # Import game systems
-from game.character_creation import create_new_character
+from character_creation import create_new_character
 
 # Import utilities
-from utils.file_manager import SaveFileManager, get_available_saves
+from file_manager import SaveFileManager, get_available_saves
 
 # Import UI modules
-from ui.display import clear_screen, pause_with_message
-from ui.menus import (
+from display import clear_screen, pause_with_message
+from menus import (
     show_main_menu, show_credits_screen, show_quit_message, show_no_saves_message,
     show_load_success_message, show_load_error_message, show_game_placeholder,
     show_save_game_list

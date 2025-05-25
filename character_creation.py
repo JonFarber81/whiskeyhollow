@@ -6,13 +6,13 @@ finalization with proper validation and user feedback.
 """
 
 from typing import Dict, Optional, Tuple
-from models.character import Character
-from ui.display import pause_with_message
-from ui.menus import (
+from character import Character
+from display import pause_with_message
+from menus import (
     show_character_creation_intro, show_attribute_rolling_screen,
     show_attribute_rolling_menu, get_manual_attributes, show_character_finalization
 )
-from utils.file_manager import quick_save_character
+from file_manager import quick_save_character
 
 
 class CharacterCreator:
