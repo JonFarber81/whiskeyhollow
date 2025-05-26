@@ -1,0 +1,144 @@
+{
+  "skills": {
+    "acting": {
+      "name": "Acting",
+      "attribute": "smarts",
+      "description": "Performance and deception through acting"
+    },
+    "agriculture": {
+      "name": "Agriculture",
+      "attribute": "smarts",
+      "description": "Farming, crops, and livestock knowledge"
+    },
+    "animals": {
+      "name": "Animals",
+      "attribute": "smarts",
+      "description": "Animal handling and knowledge"
+    },
+    "athletics": {
+      "name": "Athletics",
+      "attribute": "vigor/finesse",
+      "description": "Physical prowess and coordination"
+    },
+    "bows": {
+      "name": "Bows",
+      "attribute": "finesse",
+      "description": "Archery and bow weapons"
+    },
+    "carouse": {
+      "name": "Carouse",
+      "attribute": "vigor",
+      "description": "Drinking, partying, and carousing"
+    },
+    "cooking": {
+      "name": "Cooking",
+      "attribute": "smarts",
+      "description": "Cooking and food preparation"
+    },
+    "deceive": {
+      "name": "Deceive",
+      "attribute": "smarts",
+      "description": "Lying and manipulation"
+    },
+    "escamotage": {
+      "name": "Escamotage",
+      "attribute": "finesse",
+      "description": "Sleight of hand and pickpocketing"
+    },
+    "first_aid": {
+      "name": "First Aid",
+      "attribute": "smarts",
+      "description": "Basic medical treatment"
+    },
+    "fisticuffs": {
+      "name": "Fisticuffs",
+      "attribute": "vigor",
+      "description": "Unarmed combat"
+    },
+    "melee_weapons": {
+      "name": "Melee Weapons",
+      "attribute": "vigor",
+      "description": "Combat with melee weapons"
+    },
+    "language": {
+      "name": "Language",
+      "attribute": "smarts",
+      "description": "Foreign languages"
+    },
+    "locksmith": {
+      "name": "Locksmith",
+      "attribute": "finesse",
+      "description": "Lock picking and mechanisms"
+    },
+    "natural_environment": {
+      "name": "Natural Environment",
+      "attribute": "smarts",
+      "description": "Wilderness survival and nature knowledge"
+    },
+    "navigate": {
+      "name": "Navigate",
+      "attribute": "smarts",
+      "description": "Navigation and pathfinding"
+    },
+    "pistols": {
+      "name": "Pistols",
+      "attribute": "finesse",
+      "description": "Handgun combat and accuracy"
+    },
+    "persuasion_and_rhetoric": {
+      "name": "Persuasion and Rhetoric",
+      "attribute": "smarts",
+      "description": "Convincing others through speech"
+    },
+    "prospecting": {
+      "name": "Prospecting",
+      "attribute": "smarts",
+      "description": "Finding valuable minerals and resources"
+    },
+    "repair": {
+      "name": "Repair",
+      "attribute": "smarts",
+      "description": "Fixing tools, weapons, and equipment"
+    },
+    "riding": {
+      "name": "Riding",
+      "attribute": "finesse",
+      "description": "Horseback riding and animal handling"
+    },
+    "rifles_shotguns": {
+      "name": "Rifles and Shotguns",
+      "attribute": "finesse",
+      "description": "Long gun combat and marksmanship"
+    },
+    "slink": {
+      "name": "Slink",
+      "attribute": "finesse",
+      "description": "Moving stealthily and avoiding detection"
+    },
+    "strong_arm": {
+      "name": "Strong Arm",
+      "attribute": "vigor",
+      "description": "Using threats of force and violence to coerce others"
+    },
+    "survival": {
+      "name": "Survival",
+      "attribute": "smarts",
+      "description": "Finding water, making traps, scavenging, building shelter"
+    },
+    "throw": {
+      "name": "Throw",
+      "attribute": "finesse",
+      "description": "Throwing rocks, spears, knives, and other projectiles"
+    },
+    "track": {
+      "name": "Track",
+      "attribute": "smarts",
+      "description": "Tracking human or animal prey"
+    },
+    "trade": {
+      "name": "Trade",
+      "attribute": "smarts",
+      "description": "Negotiating good deals when buying or selling"
+    }
+  }
+}

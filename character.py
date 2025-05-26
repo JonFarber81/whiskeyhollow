@@ -489,24 +489,7 @@ class Character:
             console.print(table)
             console.print()  # Add spacing between tables
         
-        # Footer with instructions
-        footer = Panel(
-            "[bold white]💡 Skill Progression:[/bold white]\n"
-            "• [dim]Level 0:[/dim] Untrained - Basic attempts possible\n"
-            "• [dim yellow]Level 1:[/dim] Novice - Some training and practice\n"
-            "• [yellow]Level 2:[/yellow] Trained - Regular practice and experience\n" 
-            "• [bold yellow]Level 3:[/bold yellow] Skilled - Maximum at character creation\n"
-            "• [bold green]Level 4:[/bold green] Expert - Advanced training (post-creation)\n"
-            "• [bold bright_green]Level 5:[/bold bright_green] Master - Legendary expertise (post-creation)\n\n"
-            "[bold white]💡 Training Tips:[/bold white]\n"
-            "• Choose skills that match your character's background and goals\n"
-            "• Higher levels give significantly better chances of success\n"
-            "• Skills can be improved beyond level 3 through gameplay",
-            title="[bold gold1]Training Wisdom[/bold gold1]",
-            border_style="gold1"
-        )
-        console.print(footer)
-        
+
         Prompt.ask("\n[bold sandy_brown]Press Enter to return to skill selection[/bold sandy_brown]", 
                   default="", console=console)
     
