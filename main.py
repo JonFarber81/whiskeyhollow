@@ -72,9 +72,6 @@ def get_character_name() -> str:
             # Generate random name
             console.print("\n[bold gold1]🎲 Generating a random name...[/bold gold1]")
             
-            with console.status("[bold]Consulting the town records...[/bold]", spinner="dots"):
-                time.sleep(1)  # Dramatic pause
-            
             random_name = name_generator.generate_random_name()
             
             # Show the generated name with flair
@@ -221,9 +218,6 @@ def create_new_character() -> Character:
     character = Character(name)
     character.age = age
     
-    # Show character creation progress
-    with console.status(f"[bold gold1]Creating {name}, age {age}...[/bold gold1]", spinner="dots"):
-        time.sleep(1)  # Dramatic pause
     
     console.print(f"\n✨ [bold green]Character Created![/bold green] [bold sandy_brown]{name}[/bold sandy_brown], age [bold yellow]{age}[/bold yellow]")
     
@@ -241,7 +235,7 @@ def create_new_character() -> Character:
             task = progress.add_task("Rolling dice...", total=100)
             for i in range(100):
                 progress.update(task, advance=1)
-                time.sleep(0.01)
+                time.sleep(0.001)
         
         character.roll_attributes()
         display_rolled_attributes(character)
@@ -345,28 +339,6 @@ def load_character_rich(save_manager: SaveManager) -> Character:
     return None
 
 
-def show_name_preview():
-    """Show a preview of random names."""
-    console.clear()
-    console.print(Panel(
-        "[bold gold1]Random Name Generator Preview[/bold gold1]\n"
-        "[sandy_brown]Here are some sample names from Whiskey Hollow...[/sandy_brown]",
-        title="[bold cyan]🎲 NAME SAMPLES[/bold cyan]",
-        border_style="cyan"
-    ))
-    
-    name_generator.preview_names(6)
-    
-    console.print(Panel(
-        "[dim]Names are loaded from 'names_data.json'\n"
-        "You can edit this file to add your own custom names![/dim]",
-        title="[bold gold1]💡 Customization Tip[/bold gold1]",
-        border_style="gold1"
-    ))
-    
-    Prompt.ask("\nPress Enter to return to main menu", default="", console=console)
-
-
 def main():
     """Main program loop with Rich interface."""
     save_manager = SaveManager()
@@ -392,13 +364,12 @@ def main():
         menu_options = [
             "[bold]1.[/bold] 🆕 Create New Character",
             "[bold]2.[/bold] 📂 Load Character",
-            "[bold]3.[/bold] 🎲 Preview Random Names"
         ]
         
         if current_character:
             menu_options.extend([
-                "[bold]4.[/bold] 📋 View Character Sheet",
-                "[bold]5.[/bold] 💾 Save Character"
+                "[bold]3.[/bold] 📋 View Character Sheet",
+                "[bold]4.[/bold] 💾 Save Character"
             ])
         
         menu_options.append("[bold]0.[/bold] 🚪 Quit")
@@ -411,7 +382,7 @@ def main():
         )
         console.print(menu_panel)
         
-        valid_choices = ["1", "2", "3", "0"]
+        valid_choices = ["1", "2", "3", "4"]
         if current_character:
             valid_choices.extend(["4", "5"])
         
@@ -429,17 +400,14 @@ def main():
                 current_character = loaded_char
                 Prompt.ask("Press Enter to continue", default="", console=console)
         
-        elif choice == "3":
-            show_name_preview()
         
-        elif choice == "4" and current_character:
+        elif choice == "3" and current_character:
             current_character.display_character_sheet()
             Prompt.ask("\nPress Enter to continue", default="", console=console)
         
-        elif choice == "5" and current_character:
+        elif choice == "4" and current_character:
             with console.status("[bold gold1]Saving character...[/bold gold1]"):
                 success = save_manager.save_character(current_character)
-                time.sleep(0.5)  # Dramatic pause
             
             if success:
                 console.print("[bold green]✅ Character saved successfully![/bold green]")

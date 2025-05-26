@@ -171,23 +171,7 @@ class NameGenerator:
     def get_random_surname(self) -> str:
         """Get just a random surname."""
         return random.choice(self.names_data['surnames'])
-    
-    def preview_names(self, count: int = 5):
-        """Preview some random names for testing."""
-        console.print(Panel(
-            "[bold gold1]Random Name Preview[/bold gold1]",
-            border_style="gold1"
-        ))
-        
-        console.print("\n[bold cyan]Sample Male Names:[/bold cyan]")
-        for _ in range(count):
-            name = self.generate_random_name('male')
-            console.print(f"  • [sandy_brown]{name}[/sandy_brown]")
-        
-        console.print("\n[bold magenta]Sample Female Names:[/bold magenta]")
-        for _ in range(count):
-            name = self.generate_random_name('female')
-            console.print(f"  • [sandy_brown]{name}[/sandy_brown]")
+
     
     def add_name(self, category: str, name: str) -> bool:
         """Add a name to a specific category (runtime only)."""

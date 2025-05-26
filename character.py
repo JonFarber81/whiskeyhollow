@@ -154,7 +154,7 @@ class Character:
             
             for i in range(attribute_boosts):
                 with console.status(f"[bold]Rolling boost #{i + 1}...[/bold]", spinner="dots"):
-                    time.sleep(0.8)  # Dramatic pause
+                    time.sleep(0.01)  # Dramatic pause
                 self._apply_random_attribute_boost(i + 1)
         
         # Apply vigor tests with suspense
@@ -163,7 +163,7 @@ class Character:
             
             for i in range(vigor_tests):
                 with console.status(f"[bold]Preparing test #{i + 1}...[/bold]", spinner="dots"):
-                    time.sleep(0.5)
+                    time.sleep(0.01)
                 self._make_vigor_test(i + 1)
         
         # Recalculate derived stats (including movement) after all attribute changes
@@ -216,7 +216,6 @@ class Character:
             task = progress.add_task("🎲 Rolling dice...", total=100)
             for i in range(100):
                 progress.update(task, advance=1)
-                time.sleep(0.02)
         
         rolls = [random.randint(1, 6) for _ in range(dice_to_roll)]
         successes = [r for r in rolls if r >= 5]
@@ -388,10 +387,8 @@ class Character:
                         )
                         for i in range(100):
                             progress.update(task, advance=1)
-                            time.sleep(0.01)
                     
                     console.print(f"[bold cyan]{skill.name}[/bold cyan] is now level [bold yellow]{self.skills[skill_key]}[/bold yellow]!")
-                    time.sleep(1.5)  # Give more time to read the description
                 
                 else:
                     console.print("[red]Invalid selection.[/red]")
@@ -501,8 +498,7 @@ class Character:
         table = Table(title=title, box=box.ROUNDED, border_style=color, show_header=True)
         table.add_column("#", style="dim", width=3, justify="center")
         table.add_column("Skill", style=f"bold {color}", min_width=20)
-        table.add_column("Level", justify="center", width=8)
-        table.add_column("Progress", justify="center", width=12)
+        table.add_column("Level", justify="center", width=12)
         
         for skill_info in skills_list:
             number = skill_info['number']
@@ -602,7 +598,6 @@ class Character:
             skills_table = Table(box=box.ROUNDED, border_style="green", title="Learned Skills")
             skills_table.add_column("Skill", style="bold green", min_width=18)
             skills_table.add_column("Level", justify="center", style="bold yellow", width=6)
-            skills_table.add_column("Progress", justify="center", width=10)
             skills_table.add_column("Attribute", style="dim cyan", width=10)
             
             sorted_skills = sorted(self.skills.items(), key=lambda x: skill_manager.get_skill(x[0]).name if skill_manager.get_skill(x[0]) else x[0])
@@ -628,8 +623,7 @@ class Character:
                     
                     skills_table.add_row(
                         skill.name,
-                        str(level),
-                        Text(progress_bar, style=progress_style),
+                        Text(level, style=progress_style),
                         skill.attribute
                     )
             
