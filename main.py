@@ -13,7 +13,7 @@ from rich import box
 from character import Character, console  # Import shared console
 from file_manager import SaveManager
 from name_generator import name_generator
-
+import random
 
 def show_title():
     """Display the game title with Rich styling."""
@@ -279,6 +279,113 @@ def create_new_character() -> Character:
     
     return character
 
+def create_random_character() -> Character:
+    """Create a completely random character with Rich UI."""
+    console.clear()
+    show_title()
+    
+    console.print(Panel(
+        "[bold gold1]🎲 Creating a Random Character[/bold gold1]\n"
+        "[sandy_brown]Let fate decide your destiny in the West...[/sandy_brown]",
+        title="[bold cyan]RANDOM GENERATION[/bold cyan]",
+        border_style="cyan"
+    ))
+    
+    # Generate random name (no gender prompt needed - pick randomly)
+    console.print("\n[bold gold1]🎯 Rolling for identity...[/bold gold1]")
+    
+    with console.status("[bold]Consulting the fates...[/bold]", spinner="dots"):
+        time.sleep(0.5)  # Dramatic pause
+    
+    # Randomly pick gender and generate name
+    gender = random.choice(['male', 'female'])
+    name = name_generator.generate_random_name(gender)
+    
+    console.print(f"[bold sandy_brown]Name:[/bold sandy_brown] {name}")
+    
+    # Generate random age (weighted toward more interesting ranges)
+    age_weights = {
+        range(14, 23): 15,  # Young - less common
+        range(23, 35): 35,  # Prime - most common  
+        range(35, 53): 30,  # Experienced - common
+        range(53, 58): 20   # Elder - less common
+    }
+    
+    # Pick weighted random age
+    age_ranges = []
+    weights = []
+    for age_range, weight in age_weights.items():
+        age_ranges.append(age_range)
+        weights.append(weight)
+    
+    chosen_range = random.choices(age_ranges, weights=weights)[0]
+    age = random.choice(list(chosen_range))
+    
+    console.print(f"[bold sandy_brown]Age:[/bold sandy_brown] {age}")
+    
+    # Create character
+    character = Character(name)
+    character.age = age
+    
+    # Roll attributes with animation
+    console.print(f"\n[bold gold1]🎲 Rolling attributes for {name}...[/bold gold1]")
+    
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        transient=True
+    ) as progress:
+        task = progress.add_task("Rolling dice...", total=100)
+        for i in range(100):
+            progress.update(task, advance=1)
+            time.sleep(0.005)
+    
+    character.roll_attributes()
+    display_rolled_attributes(character)
+    
+    # Apply age effects
+    console.print(f"\n[bold gold1]⏳ Applying life experience...[/bold gold1]")
+    character.apply_age_effects()
+    
+    # Random skill allocation
+    console.print(f"\n[bold gold1]📚 Learning skills randomly...[/bold gold1]")
+    character.allocate_skill_points_randomly()
+    
+    # Final character sheet
+    console.print(f"\n[bold green]🌟 Behold your random character![/bold green]")
+    time.sleep(1)
+    character.display_character_sheet()
+    
+    return character
+
+
+def create_random_character_quick() -> Character:
+    """Create a random character with minimal UI for batch generation."""
+    # Randomly pick gender and generate name
+    gender = random.choice(['male', 'female'])
+    name = name_generator.generate_random_name(gender)
+    
+    # Generate weighted random age
+    age_weights = {
+        range(14, 23): 15,
+        range(23, 35): 35,
+        range(35, 53): 30,
+        range(53, 58): 20
+    }
+    
+    age_ranges, weights = zip(*age_weights.items())
+    chosen_range = random.choices(age_ranges, weights=weights)[0]
+    age = random.choice(list(chosen_range))
+    
+    # Create and setup character
+    character = Character(name)
+    character.age = age
+    character.roll_attributes()
+    character.apply_age_effects()
+    character.allocate_skill_points_randomly()
+    
+    return character
 
 def load_character_rich(save_manager: SaveManager) -> Character:
     """Load character with Rich interface."""
@@ -363,49 +470,55 @@ def main():
         # Main menu
         menu_options = [
             "[bold]1.[/bold] 🆕 Create New Character",
-            "[bold]2.[/bold] 📂 Load Character",
+            "[bold]2.[/bold] 🎲 Create Random Character", 
+            "[bold]3.[/bold] 📂 Load Character",
         ]
-        
+
         if current_character:
             menu_options.extend([
-                "[bold]3.[/bold] 📋 View Character Sheet",
-                "[bold]4.[/bold] 💾 Save Character"
+                "[bold]4.[/bold] 📋 View Character Sheet",
+                "[bold]5.[/bold] 💾 Save Character"
             ])
-        
+
         menu_options.append("[bold]0.[/bold] 🚪 Quit")
-        
+
+        # Update the choice handling:
+        valid_choices = ["1", "2", "3", "0"]
+        if current_character:
+            valid_choices.extend(["4", "5"])
+
         menu_panel = Panel(
             "\n".join(menu_options),
             title="[bold gold1]Main Menu[/bold gold1]",
             border_style="gold1",
             padding=(1, 2)
         )
-        console.print(menu_panel)
-        
-        valid_choices = ["1", "2", "3", "4"]
-        if current_character:
-            valid_choices.extend(["4", "5"])
-        
+        console.print(menu_panel)        
         choice = Prompt.ask("Choice", choices=valid_choices, console=console)
-        
+
         if choice == "1":
             current_character = create_new_character()
             if current_character:
                 console.print(f"\n[bold green]🎉 {current_character.name} is ready for adventure![/bold green]")
                 Prompt.ask("Press Enter to continue", default="", console=console)
-        
+
         elif choice == "2":
+            current_character = create_random_character()
+            if current_character:
+                console.print(f"\n[bold green]🎉 Random character {current_character.name} is ready for adventure![/bold green]")
+                Prompt.ask("Press Enter to continue", default="", console=console)
+
+        elif choice == "3":
             loaded_char = load_character_rich(save_manager)
             if loaded_char:
                 current_character = loaded_char
                 Prompt.ask("Press Enter to continue", default="", console=console)
-        
-        
-        elif choice == "3" and current_character:
+
+        elif choice == "4" and current_character:
             current_character.display_character_sheet()
             Prompt.ask("\nPress Enter to continue", default="", console=console)
-        
-        elif choice == "4" and current_character:
+
+        elif choice == "5" and current_character:
             with console.status("[bold gold1]Saving character...[/bold gold1]"):
                 success = save_manager.save_character(current_character)
             
@@ -414,7 +527,7 @@ def main():
             else:
                 console.print("[bold red]❌ Failed to save character.[/bold red]")
             Prompt.ask("Press Enter to continue", default="", console=console)
-        
+
         elif choice == "0":
             console.print("\n[bold gold1]Thanks for visiting Whiskey Hollow, partner![/bold gold1]")
             console.print("[dim]May your aim be true and your legend grow...[/dim] 🤠")

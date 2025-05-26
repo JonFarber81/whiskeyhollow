@@ -56,6 +56,74 @@ class Character:
         self.armor: str = "Clothes"
         self.location: str = "Whiskey Hollow"
 
+
+    def allocate_skill_points_randomly(self) -> None:
+        """Randomly allocate skill points with some logic to create interesting characters."""
+        if self.skill_points <= 0:
+            console.print("[yellow]No skill points to allocate.[/yellow]")
+            return
+        
+        console.print(f"\n[bold gold1]🎲 Randomly training {self.name}...[/bold gold1]")
+        
+        # Get all available skills
+        skills_list = skill_manager.get_skill_list()
+        skill_keys = [key for key, _ in skills_list]
+        
+        # Track allocations for display
+        allocations = []
+        
+        with Progress(
+            TextColumn("[progress.description]"),
+            BarColumn(),
+            console=console,
+            transient=True
+        ) as progress:
+            task = progress.add_task("Training skills...", total=self.skill_points)
+            original_points = self.skill_points
+            
+            while self.skill_points > 0:
+                # Pick a random skill
+                skill_key = random.choice(skill_keys)
+                current_level = self.skills.get(skill_key, 0)
+                
+                # Skip if already at max level (3 during creation)
+                if current_level >= 3:
+                    continue
+                
+                # Add the skill point
+                self.skills[skill_key] = current_level + 1
+                self.skill_points -= 1
+                
+                # Track for display
+                skill = skill_manager.get_skill(skill_key)
+                allocations.append(f"{skill.name} {current_level} → {current_level + 1}")
+                
+                # Update progress
+                progress.update(task, advance=1)
+                
+                # Small delay for effect
+                time.sleep(0.02)
+        
+        # Display what was learned
+        console.print(f"\n[bold green]✨ {self.name} learned {len(allocations)} skills:[/bold green]")
+        
+        # Group by skill level for prettier display
+        skill_improvements = {}
+        for skill_key, level in self.skills.items():
+            skill = skill_manager.get_skill(skill_key)
+            if skill:
+                if level not in skill_improvements:
+                    skill_improvements[level] = []
+                skill_improvements[level].append(skill.name)
+        
+        # Display grouped skills
+        for level in sorted(skill_improvements.keys(), reverse=True):
+            skills_at_level = skill_improvements[level]
+            level_color = "bright_green" if level == 3 else "yellow" if level == 2 else "cyan"
+            console.print(f"[{level_color}]Level {level}:[/{level_color}] {', '.join(skills_at_level)}")
+        
+        console.print(f"[bold green]🎉 Random skill allocation complete![/bold green]")
+
     def roll_attributes(self) -> None:
         """Roll 4d6 drop lowest for each attribute."""
         self.vigor = roll_4d6_drop_lowest()
@@ -612,7 +680,7 @@ class Character:
                     
                     skills_table.add_row(
                         skill.name,
-                        Text(level, style=progress_style),
+                        Text(str(level), style=progress_style),
                         skill.attribute
                     )
             
