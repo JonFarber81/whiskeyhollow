@@ -12,6 +12,7 @@ from rich import box
 
 from character import Character, console  # Import shared console
 from file_manager import SaveManager
+from name_generator import name_generator
 
 
 def show_title():
@@ -55,19 +56,63 @@ def show_title():
 
 
 def get_character_name() -> str:
-    """Get character name from user with Rich styling."""
+    """Get character name from user with Rich styling and random name option."""
     console.print(Panel(
         "[bold sandy_brown]What's your name, stranger?[/bold sandy_brown]\n"
-        "[dim]Enter a name for your character (1-20 characters)[/dim]",
+        "[dim]Enter a name for your character (1-20 characters)\n"
+        "Or type 'random' to generate a random Western name[/dim]",
         title="[bold gold1]Character Creation[/bold gold1]",
         border_style="gold1"
     ))
     
     while True:
-        name = Prompt.ask("Character name", console=console)
-        if name and len(name) <= 20:
-            return name
-        console.print("[red]Please enter a valid name (1-20 characters)[/red]")
+        name_input = Prompt.ask("Character name (or 'random')", console=console)
+        
+        if name_input.lower() == 'random':
+            # Generate random name
+            console.print("\n[bold gold1]🎲 Generating a random name...[/bold gold1]")
+            
+            with console.status("[bold]Consulting the town records...[/bold]", spinner="dots"):
+                time.sleep(1)  # Dramatic pause
+            
+            random_name = name_generator.generate_random_name()
+            
+            # Show the generated name with flair
+            name_panel = Panel(
+                f"[bold sandy_brown]{random_name}[/bold sandy_brown]",
+                title="[bold gold1]🎯 Random Name Generated[/bold gold1]",
+                border_style="gold1",
+                padding=(1, 2)
+            )
+            console.print(name_panel)
+            
+            # Ask if they want to keep it
+            keep_name = Prompt.ask(
+                "Keep this name?",
+                choices=["y", "n", "yes", "no"],
+                default="y",
+                console=console
+            )
+            
+            if keep_name.lower() in ['y', 'yes']:
+                return random_name
+            else:
+                console.print("[yellow]Let's try again...[/yellow]")
+                # Generate another or let them type manually
+                choice = Prompt.ask(
+                    "Generate another random name or enter manually?",
+                    choices=["random", "manual", "r", "m"],
+                    default="random",
+                    console=console
+                )
+                if choice.lower() in ['random', 'r']:
+                    continue  # Will generate another random name
+                # If manual, fall through to normal name input
+                
+        elif name_input and len(name_input) <= 20:
+            return name_input
+        else:
+            console.print("[red]Please enter a valid name (1-20 characters) or 'random'[/red]")
 
 
 def get_character_age() -> int:
@@ -300,6 +345,28 @@ def load_character_rich(save_manager: SaveManager) -> Character:
     return None
 
 
+def show_name_preview():
+    """Show a preview of random names."""
+    console.clear()
+    console.print(Panel(
+        "[bold gold1]Random Name Generator Preview[/bold gold1]\n"
+        "[sandy_brown]Here are some sample names from Whiskey Hollow...[/sandy_brown]",
+        title="[bold cyan]🎲 NAME SAMPLES[/bold cyan]",
+        border_style="cyan"
+    ))
+    
+    name_generator.preview_names(6)
+    
+    console.print(Panel(
+        "[dim]Names are loaded from 'names_data.json'\n"
+        "You can edit this file to add your own custom names![/dim]",
+        title="[bold gold1]💡 Customization Tip[/bold gold1]",
+        border_style="gold1"
+    ))
+    
+    Prompt.ask("\nPress Enter to return to main menu", default="", console=console)
+
+
 def main():
     """Main program loop with Rich interface."""
     save_manager = SaveManager()
@@ -324,13 +391,14 @@ def main():
         # Main menu
         menu_options = [
             "[bold]1.[/bold] 🆕 Create New Character",
-            "[bold]2.[/bold] 📂 Load Character"
+            "[bold]2.[/bold] 📂 Load Character",
+            "[bold]3.[/bold] 🎲 Preview Random Names"
         ]
         
         if current_character:
             menu_options.extend([
-                "[bold]3.[/bold] 📋 View Character Sheet",
-                "[bold]4.[/bold] 💾 Save Character"
+                "[bold]4.[/bold] 📋 View Character Sheet",
+                "[bold]5.[/bold] 💾 Save Character"
             ])
         
         menu_options.append("[bold]0.[/bold] 🚪 Quit")
@@ -343,9 +411,9 @@ def main():
         )
         console.print(menu_panel)
         
-        valid_choices = ["1", "2", "0"]
+        valid_choices = ["1", "2", "3", "0"]
         if current_character:
-            valid_choices.extend(["3", "4"])
+            valid_choices.extend(["4", "5"])
         
         choice = Prompt.ask("Choice", choices=valid_choices, console=console)
         
@@ -361,11 +429,14 @@ def main():
                 current_character = loaded_char
                 Prompt.ask("Press Enter to continue", default="", console=console)
         
-        elif choice == "3" and current_character:
+        elif choice == "3":
+            show_name_preview()
+        
+        elif choice == "4" and current_character:
             current_character.display_character_sheet()
             Prompt.ask("\nPress Enter to continue", default="", console=console)
         
-        elif choice == "4" and current_character:
+        elif choice == "5" and current_character:
             with console.status("[bold gold1]Saving character...[/bold gold1]"):
                 success = save_manager.save_character(current_character)
                 time.sleep(0.5)  # Dramatic pause
