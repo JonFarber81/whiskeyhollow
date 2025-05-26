@@ -276,14 +276,24 @@ class Character:
             console.print("[yellow]No skill points to allocate.[/yellow]")
             return
         
+        last_action = None  # Track the last skill improvement
+        
         while self.skill_points > 0:
             console.clear()
             
-            # Header with remaining points
-            header = Panel(
+            # Header with remaining points and last action
+            header_content = (
                 f"[bold gold1]Skill Training for {self.name}[/bold gold1]\n"
                 f"[sandy_brown]Remaining Points: {self.skill_points}[/sandy_brown]\n"
-                f"[dim]Skills are capped at level 3[/dim]",
+                f"[dim]Skills are capped at level 3[/dim]"
+            )
+            
+            # Add last action if available
+            if last_action:
+                header_content += f"\n[bold green]✨ Last: {last_action}[/bold green]"
+            
+            header = Panel(
+                header_content,
                 title="[bold cyan]🎓 SKILL ALLOCATION[/bold cyan]",
                 border_style="cyan"
             )
@@ -340,6 +350,7 @@ class Character:
                 # Handle help command
                 if user_input == "?" or user_input.lower() == "help":
                     self._show_skill_descriptions(skills_list)
+                    last_action = None  # Clear last action after help
                     continue
                 
                 # Convert to integer for skill selection
@@ -349,6 +360,7 @@ class Character:
                     if self.skill_points > 0:
                         console.print(f"[red]⚠️  You must spend all {self.skill_points} skill points before continuing.[/red]")
                         Prompt.ask("Press Enter to continue", default="", console=console)
+                        last_action = None
                         continue
                     else:
                         break
@@ -358,45 +370,22 @@ class Character:
                     current_level = self.skills.get(skill_key, 0)
                     
                     if current_level >= 3:
-                        console.print(f"[red]❌ {skill.name} is already at maximum level (3).[/red]")
-                        Prompt.ask("Press Enter to continue", default="", console=console)
+                        last_action = f"❌ {skill.name} already at max level"
                         continue
                     
-                    # Show skill info before adding point
-                    console.print(f"\n[bold cyan]📖 {skill.name}[/bold cyan]")
-                    console.print(f"[dim]{skill.description}[/dim]")
-                    console.print(f"[yellow]Attribute: {skill.attribute.title()}[/yellow]")
-                    
-                    # Add point to skill with animation
+                    # Add point to skill
                     self.skills[skill_key] = current_level + 1
                     self.skill_points -= 1
                     
-                    # Show skill improvement animation
-                    console.print(f"\n[bold green]✨ {skill.name} improved![/bold green]")
-                    
-                    # Progress bar animation
-                    with Progress(
-                        TextColumn("[progress.description]"),
-                        BarColumn(),
-                        console=console,
-                        transient=True
-                    ) as progress:
-                        task = progress.add_task(
-                            f"Level {current_level} → {self.skills[skill_key]}", 
-                            total=100
-                        )
-                        for i in range(100):
-                            progress.update(task, advance=1)
-                    
-                    console.print(f"[bold cyan]{skill.name}[/bold cyan] is now level [bold yellow]{self.skills[skill_key]}[/bold yellow]!")
+                    # Set last action message
+                    last_action = f"{skill.name} {current_level} → {self.skills[skill_key]}"
                 
                 else:
-                    console.print("[red]Invalid selection.[/red]")
-                    Prompt.ask("Press Enter to continue", default="", console=console)
+                    last_action = "❌ Invalid selection"
                     
             except ValueError:
-                console.print("[red]Invalid input. Enter a number, or ? for help.[/red]")
-                Prompt.ask("Press Enter to continue", default="", console=console)
+                last_action = "❌ Invalid input"
+                continue
             except KeyboardInterrupt:
                 console.print("[yellow]Skill allocation cancelled.[/yellow]")
                 break
