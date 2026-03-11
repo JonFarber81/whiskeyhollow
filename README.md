@@ -1,8 +1,8 @@
-# CLAUDE.md — Whiskey Hollow: A Kansas City Bootlegger Roguelike
+# Whiskey Hollow: A Kansas City Bootlegger Roguelike
 
 ## Project Overview
 
-**Whiskey Hollowlood** is a roguelike RPG set in Prohibition-era Kansas City (1920–1933), built in Python using the TCOD (libtcod) library. The player runs a bootlegging operation, manages a crew, moves contraband, fights rival gangs and cops, and climbs the ranks of organized crime through faction allegiance and completed jobs.
+**Whiskey Hollow** is a roguelike RPG set in Prohibition-era Kansas City (1920–1933), built in Python using the TCOD (libtcod) library. The player runs a bootlegging operation, manages a crew, moves contraband, fights rival gangs and cops, and climbs the ranks of organized crime through faction allegiance and completed jobs.
 
 Primary inspirations: *Peaky Blinders*, *Boardwalk Empire*, *Road to Perdition*, *Miller's Crossing*.
 
