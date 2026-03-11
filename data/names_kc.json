@@ -1,0 +1,64 @@
+{
+  "first_male": [
+    "Sal", "Tommy", "Eddie", "Benny", "Dutch", "Vinnie", "Ace", "Shorty",
+    "Knuckles", "Paddy", "Clem", "Dago", "Mickey", "Red", "Frankie", "Bruno",
+    "Lou", "Richie", "Joe", "Tony", "Carlo", "Nicky", "Lefty", "Bugsy",
+    "Harry", "Al", "Luca", "Marco", "Dante", "Angelo"
+  ],
+  "first_female": [
+    "Rita", "Vera", "Dolores", "Flo", "Mabel", "Hazel", "Pearl", "Ethel",
+    "Loretta", "Agnes", "Ruthie", "Bess", "Lola", "Dottie", "Irene", "Clara",
+    "Mae", "Vivian", "Norma", "Florence", "Estelle", "Gladys", "Bertha", "Thelma"
+  ],
+  "last": [
+    "Malone", "Torrio", "Capelli", "Burke", "O'Brien", "Marchetti",
+    "Flynn", "Rossi", "Hennessey", "DeLuca", "Callahan", "Vitale",
+    "Hannigan", "Conti", "Finneran", "Greco", "Schultz", "Kowalski",
+    "Pendleton", "Rafferty", "Costello", "Luciano", "Genna", "Aiello",
+    "Morrison", "Fitzgerald", "Donovan", "Santangelo", "Caruso", "Moretti"
+  ],
+  "nicknames": [
+    "Two-Gun", "Scar", "Fingers", "Ice", "The Ox", "Silky", "Brickhouse",
+    "Lucky", "Slim", "Doc", "The Snake", "Patch", "Gimpy", "Tiny",
+    "No-Nose", "Fancy Dan", "The Weasel", "Icepick", "Big Jim", "Greasy"
+  ],
+  "kc_locations": [
+    "the West Bottoms",
+    "the River Market",
+    "18th and Vine",
+    "Union Station",
+    "Westport",
+    "Quality Hill",
+    "the Crossroads",
+    "the Garment District",
+    "Columbus Park",
+    "Rosedale"
+  ],
+  "speakeasy_names": [
+    "The Blue Room",
+    "The Blind Pig",
+    "The Velvet Curtain",
+    "Pete's Back Room",
+    "The Stag Club",
+    "Lucky's Lounge",
+    "The Pendergast Arms",
+    "The Midnight Special",
+    "The Kansas City Shuffle",
+    "The Missouri Mule",
+    "The River Rat",
+    "Dolly's Place",
+    "The Cork & Barrel",
+    "The Jazz Hound",
+    "The Southside Social"
+  ],
+  "period_slang": {
+    "liquor": ["hooch", "giggle water", "the sauce", "rot-gut", "white lightning", "booze", "the good stuff"],
+    "police": ["bulls", "the fuzz", "the law", "flatfoots", "badges", "the heat", "feds"],
+    "gun": ["gat", "iron", "heater", "rod", "piece", "roscoe", "the hardware"],
+    "money": ["cabbage", "bread", "scratch", "dough", "green", "lettuce", "mazuma"],
+    "kill": ["rub out", "put to sleep", "cool off", "ice", "bump off", "take for a ride"],
+    "run": ["blow this joint", "take it on the lam", "make tracks", "scram", "dust"],
+    "fight": ["mix it up", "have a dust-up", "go to the mat", "throw down"],
+    "excellent": ["the bee's knees", "the cat's pajamas", "copacetic", "swell", "the berries"]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "runs_completed": 1,
+  "best_cash": 724,
+  "best_faction_rank": "Manager",
+  "total_kills": 0,
+  "total_jobs": 3,
+  "unlocks": {
+    "already_connected": true,
+    "well_armed": false,
+    "nest_egg": false
+  },
+  "unlock_thresholds": {
+    "already_connected": {
+      "condition": "reach_soldier_rank",
+      "description": "Start with 10 rep in one faction"
+    },
+    "well_armed": {
+      "condition": "kill_10_enemies",
+      "description": "Start with a .38 revolver"
+    },
+    "nest_egg": {
+      "condition": "earn_5000_cash",
+      "description": "Start with +$100"
+    }
+  }
+}
