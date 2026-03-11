@@ -34,6 +34,7 @@ class CharacterClassDef:
     bonus: ClassBonus
     faction_affinity: str  # Name of the faction they have a natural connection to
     starting_item_keys: list[str] = field(default_factory=list)
+    starting_perk: str = ""  # Phase 16: Auto-granted perk key for this class
 
     def make_stats(self) -> Stats:
         return Stats(
@@ -66,6 +67,7 @@ CLASS_DEFS: Dict[CharacterClass, CharacterClassDef] = {
         ),
         faction_affinity="River Market Syndicate",
         starting_item_keys=["brass_knuckles"],
+        starting_perk="iron_fists",
     ),
     CharacterClass.CON_MAN: CharacterClassDef(
         name="Con Man",
@@ -79,6 +81,7 @@ CLASS_DEFS: Dict[CharacterClass, CharacterClassDef] = {
         ),
         faction_affinity="The Jazz District Co.",
         starting_item_keys=["forged_documents"],
+        starting_perk="silk_tongue",
     ),
     CharacterClass.SMUGGLER: CharacterClassDef(
         name="Smuggler",
@@ -91,6 +94,7 @@ CLASS_DEFS: Dict[CharacterClass, CharacterClassDef] = {
         ),
         faction_affinity="Union Station Crew",
         starting_item_keys=["whiskey_case", "whiskey_case", "whiskey_case"],
+        starting_perk="numbers_runner",
     ),
     CharacterClass.FIXER: CharacterClassDef(
         name="Fixer",
@@ -104,6 +108,7 @@ CLASS_DEFS: Dict[CharacterClass, CharacterClassDef] = {
         ),
         faction_affinity="Pendergast Machine",
         starting_item_keys=["police_contact"],
+        starting_perk="friends_in_low_places",
     ),
 }
 

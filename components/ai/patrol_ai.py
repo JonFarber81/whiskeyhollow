@@ -21,6 +21,11 @@ class PatrolAI(BaseAI):
     def perform(self, engine: Engine) -> None:
         # If player visible → alert and switch AI
         if engine.game_map.visible[self.entity.x, self.entity.y]:
+            # Phase 15: KCPD Protected rank perk — cops ignore player at heat < 50
+            standing = getattr(engine.player, "faction_standing", None)
+            if standing and standing.get_rep("kcpd") >= 45 and engine.heat < 50:
+                return  # Protected — cop looks the other way
+
             from ui import color as Color
             engine.message_log.add_message(
                 f"{self.entity.name} spots you! The bull blows his whistle!",

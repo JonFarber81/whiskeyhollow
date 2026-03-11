@@ -77,6 +77,62 @@ def spawn_enemy(
     return actor
 
 
+def spawn_named_npc(
+    npc_key: str,
+    x: int,
+    y: int,
+    game_map: GameMap,
+) -> Optional[Actor]:
+    """
+    Phase 13: Spawn a named NPC from data/npcs.json at the given position.
+    Uses BossAI for bosses, HostileEnemy for rivals/contacts.
+    """
+    import json, os
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
+    try:
+        with open(path) as f:
+            npcs = json.load(f)
+    except Exception:
+        return None
+
+    data = npcs.get(npc_key)
+    if not data:
+        return None
+
+    from components.ai.boss_ai import BossAI
+
+    tier = data.get("tier", "contact")
+    if tier == "boss":
+        ai = BossAI(
+            npc_key=npc_key,
+            phase_threshold=data.get("phase_threshold", 0.5),
+            phase_two_behavior=data.get("phase_two_behavior", "calls_reinforcements"),
+        )
+        is_boss = True
+    else:
+        ai = HostileEnemy()
+        is_boss = False
+
+    actor = Actor(
+        x=x, y=y,
+        char=data["char"],
+        color=tuple(data["color"]),
+        name=data["name"],
+        fighter=Fighter(
+            max_hp=data["hp"],
+            hp=data["hp"],
+            base_attack=data["attack"],
+            base_defense=data["defense"],
+        ),
+        inventory=Inventory(capacity=4),
+        ai=ai,
+        game_map=game_map,
+        npc_key=npc_key,
+        is_boss=is_boss,
+    )
+    return actor
+
+
 def populate_map(
     game_map: GameMap,
     rooms: list,

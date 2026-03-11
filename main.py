@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import random
 
 import tcod
@@ -10,7 +11,11 @@ import tcod.console
 import tcod.context
 import tcod.event
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT, TITLE, FONT_PATH, FONT_FALLBACK, TILE_WIDTH, TILE_HEIGHT
+from constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT, TITLE,
+    FONT_PATH, FONT_FALLBACK, TILE_WIDTH, TILE_HEIGHT,
+    TILESET_PATH, TILESET_COLUMNS, TILESET_ROWS, USE_TILESHEET,
+)
 from engine.engine import Engine
 from engine.event_handler import EventHandler
 from engine.exceptions import Impossible, QuitGame, PlayerDead, PlayerWon
@@ -26,7 +31,11 @@ from economy.heat import HeatSystem
 from ui import color as Color
 
 
-def new_game(player_name: str = "Jack", char_class: CharacterClass = CharacterClass.BRAWLER) -> Engine:
+def new_game(
+    player_name: str = "Jack",
+    char_class: CharacterClass = CharacterClass.BRAWLER,
+    starting_perk: str = "",
+) -> Engine:
     """Bootstrap a new game with the chosen class."""
     seed = random.randint(0, 2**32)
     rng = random.Random(seed)
@@ -58,6 +67,15 @@ def new_game(player_name: str = "Jack", char_class: CharacterClass = CharacterCl
     player.stats = stats
     player.char_class = char_class
 
+    # Phase 16: Apply class auto-perk + chosen creation perk
+    from entities.perks import PERKS
+    auto_perk = CLASS_DEFS[char_class].starting_perk
+    if auto_perk and auto_perk in PERKS:
+        player.perks.append(auto_perk)
+    if starting_perk and starting_perk in PERKS and starting_perk not in player.perks:
+        player.perks.append(starting_perk)
+        _apply_immediate_perk(player, starting_perk)
+
     # Faction standing — start with affinity for class faction
     faction_standing = FactionStanding()
     faction_standing.entity = player
@@ -78,8 +96,8 @@ def new_game(player_name: str = "Jack", char_class: CharacterClass = CharacterCl
     engine.cash = class_def.starting_cash
     engine.market = Market(rng)
     engine.heat_system = HeatSystem(engine)
-    engine.controlled_districts: list[str] = []
-    engine.jobs_completed: int = 0
+    engine.controlled_districts = []
+    engine.jobs_completed = 0
     engine.update_fov()
     engine.message_log.add_message(
         f"Welcome to Kansas City, 1924. You're a {class_def.name}. "
@@ -89,12 +107,28 @@ def new_game(player_name: str = "Jack", char_class: CharacterClass = CharacterCl
     return engine
 
 
+def _apply_immediate_perk(player: Actor, perk_key: str) -> None:
+    """Apply perks with immediate one-time effects."""
+    from entities.perks import PERKS
+    perk = PERKS.get(perk_key)
+    if not perk:
+        return
+    if perk.effect_type == "stat_bonus" and perk.effect_target == "max_hp":
+        if player.fighter:
+            player.fighter.max_hp += int(perk.effect_value)
+            player.fighter.hp += int(perk.effect_value)
+
+
 def _load_tileset() -> tcod.tileset.Tileset:
-    import os
+    """Phase 11: Load CP437 tilesheet if available, else fall back to TTF."""
+    if USE_TILESHEET and os.path.exists(TILESET_PATH):
+        return tcod.tileset.load_tilesheet(
+            TILESET_PATH, TILESET_COLUMNS, TILESET_ROWS,
+            tcod.tileset.CHARMAP_CP437,
+        )
     for path in (FONT_PATH, FONT_FALLBACK):
         if os.path.exists(path):
             return tcod.tileset.load_truetype_font(path, TILE_WIDTH, TILE_HEIGHT)
-    # Last resort: procedural block elements (always available)
     return tcod.tileset.procedural_block_elements(TILE_WIDTH, TILE_HEIGHT)
 
 
@@ -109,14 +143,35 @@ def main() -> None:
     ) as context:
         root_console = tcod.console.Console(SCREEN_WIDTH, SCREEN_HEIGHT, order="F")
 
-        from ui.menus import run_character_creation
+        from ui.menus import run_character_creation, run_main_menu, run_perk_selection
         from ui.game_over import show_game_over, show_victory
         from factions.reputation import check_win_condition
+        from engine.save_load import list_saves, delete_save
 
         while True:
-            # Character creation at start of each run
-            player_name, char_class = run_character_creation(context, root_console)
-            engine = new_game(player_name=player_name, char_class=char_class)
+            saves = list_saves()
+            choice = run_main_menu(context, root_console, saves)
+
+            if choice == "quit":
+                return
+            elif choice == "continue":
+                from engine.save_load import load_game
+                engine = load_game(slot=0)
+                if engine is None:
+                    continue
+            else:
+                # New game: character creation → perk pick
+                player_name, char_class = run_character_creation(context, root_console)
+                starting_perk = run_perk_selection(
+                    None, context, root_console,
+                    char_class=char_class, is_creation=True,
+                )
+                engine = new_game(
+                    player_name=player_name,
+                    char_class=char_class,
+                    starting_perk=starting_perk or "",
+                )
+
             event_handler = EventHandler(engine, context=context, console=root_console)
 
             run_ended = False
@@ -129,14 +184,15 @@ def main() -> None:
                     context.convert_event(event)
                     try:
                         event_handler.handle_events(event)
-                        # Check win condition after every action
                         if check_win_condition(engine):
+                            delete_save(0)
                             show_victory(engine, context, root_console)
                             run_ended = True
                             break
                     except Impossible as exc:
                         engine.message_log.add_message(str(exc), fg=Color.MID_GREY)
                     except PlayerDead:
+                        delete_save(0)
                         show_game_over(engine, context, root_console)
                         run_ended = True
                         break
@@ -145,7 +201,6 @@ def main() -> None:
 
 
 def _faction_key_for_affinity(faction_name: str) -> str:
-    """Map faction display name to its key."""
     mapping = {
         "Pendergast Machine": "pendergast",
         "Union Station Crew": "union_station",

@@ -1,0 +1,218 @@
+{
+  "iron_fists": {
+    "name": "Iron Fists",
+    "description": "Unarmed attacks deal +2 damage. Your hands are registered weapons.",
+    "category": "combat",
+    "class_affinity": ["Brawler"],
+    "effect_type": "stat_bonus",
+    "effect_target": "unarmed_damage",
+    "effect_value": 2
+  },
+  "deadeye": {
+    "name": "Deadeye",
+    "description": "Ranged attack rolls gain +2. You don't miss twice.",
+    "category": "combat",
+    "class_affinity": ["Smuggler"],
+    "effect_type": "stat_bonus",
+    "effect_target": "ranged_attack",
+    "effect_value": 2
+  },
+  "streetfighter": {
+    "name": "Streetfighter",
+    "description": "Critical hit threshold lowered by 2. You know where it hurts.",
+    "category": "combat",
+    "class_affinity": ["Brawler"],
+    "effect_type": "stat_bonus",
+    "effect_target": "crit_threshold",
+    "effect_value": -2
+  },
+  "hard_boiled": {
+    "name": "Hard-Boiled",
+    "description": "Maximum HP +15. You've taken worse.",
+    "category": "combat",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "max_hp",
+    "effect_value": 15
+  },
+  "sucker_punch": {
+    "name": "Sucker Punch",
+    "description": "First attack each combat deals +3 damage. Catch them off guard.",
+    "category": "combat",
+    "class_affinity": ["Brawler"],
+    "effect_type": "passive",
+    "effect_target": "first_attack_bonus",
+    "effect_value": 3
+  },
+  "blood_money": {
+    "name": "Blood Money",
+    "description": "Earn $10 cash for each enemy killed. It's just business.",
+    "category": "combat",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "passive",
+    "effect_target": "cash_per_kill",
+    "effect_value": 10
+  },
+  "black_market": {
+    "name": "Black Market",
+    "description": "Sell contraband 15% above market price. You know the right buyers.",
+    "category": "economy",
+    "class_affinity": ["Smuggler"],
+    "effect_type": "multiplier",
+    "effect_target": "sell_price",
+    "effect_value": 1.15
+  },
+  "silk_tongue": {
+    "name": "Silk Tongue",
+    "description": "Bribery score +3. Your words are smoother than good bourbon.",
+    "category": "economy",
+    "class_affinity": ["Con Man"],
+    "effect_type": "stat_bonus",
+    "effect_target": "bribery_score",
+    "effect_value": 3
+  },
+  "numbers_runner": {
+    "name": "Numbers Runner",
+    "description": "Delivery job cash reward +20%. You've run every route in KC.",
+    "category": "economy",
+    "class_affinity": ["Smuggler"],
+    "effect_type": "multiplier",
+    "effect_target": "delivery_cash",
+    "effect_value": 1.20
+  },
+  "bulk_buyer": {
+    "name": "Bulk Buyer",
+    "description": "Purchase contraband 15% cheaper. You buy in volume.",
+    "category": "economy",
+    "class_affinity": ["Smuggler"],
+    "effect_type": "multiplier",
+    "effect_target": "buy_price",
+    "effect_value": 0.85
+  },
+  "nest_egg": {
+    "name": "Nest Egg",
+    "description": "+$25 bonus cash on each successful job. Always squirrel something away.",
+    "category": "economy",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "job_cash_bonus",
+    "effect_value": 25
+  },
+  "protection_money": {
+    "name": "Protection Money",
+    "description": "+$15 per turn from controlled territory. Let the cash come to you.",
+    "category": "economy",
+    "class_affinity": ["Fixer"],
+    "effect_type": "passive",
+    "effect_target": "territory_income",
+    "effect_value": 15
+  },
+  "ghost": {
+    "name": "Ghost",
+    "description": "Heat generated from combat reduced by 25%. You leave no witnesses.",
+    "category": "shadow",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "multiplier",
+    "effect_target": "combat_heat",
+    "effect_value": 0.75
+  },
+  "friends_in_low_places": {
+    "name": "Friends in Low Places",
+    "description": "Heat passive decay +5 per chapter. You've got friends on the inside.",
+    "category": "shadow",
+    "class_affinity": ["Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "heat_decay",
+    "effect_value": 5
+  },
+  "crooked_badge": {
+    "name": "Crooked Badge",
+    "description": "Raid threshold raised from 80 to 95. Someone at the precinct owes you.",
+    "category": "shadow",
+    "class_affinity": ["Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "raid_threshold",
+    "effect_value": 15
+  },
+  "light_fingers": {
+    "name": "Light Fingers",
+    "description": "Pick up items from adjacent tiles without stepping on them.",
+    "category": "shadow",
+    "class_affinity": ["Con Man"],
+    "effect_type": "unlock",
+    "effect_target": "adjacent_pickup",
+    "effect_value": 1
+  },
+  "vanish": {
+    "name": "Vanish",
+    "description": "Once per run: instantly reduce heat to zero. Press [v] to activate.",
+    "category": "shadow",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "unlock",
+    "effect_target": "vanish_ability",
+    "effect_value": 1
+  },
+  "clean_hands": {
+    "name": "Clean Hands",
+    "description": "Bribery jobs never increase heat on success. Plausible deniability.",
+    "category": "shadow",
+    "class_affinity": ["Con Man"],
+    "effect_type": "passive",
+    "effect_target": "bribery_heat",
+    "effect_value": 0
+  },
+  "natural_politician": {
+    "name": "Natural Politician",
+    "description": "All faction rep gains +10%. You know how to work a room.",
+    "category": "influence",
+    "class_affinity": ["Con Man", "Fixer"],
+    "effect_type": "multiplier",
+    "effect_target": "rep_gain",
+    "effect_value": 1.10
+  },
+  "street_rep": {
+    "name": "Street Rep",
+    "description": "Rep loss on failed jobs halved. Rumors die fast on your block.",
+    "category": "influence",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "multiplier",
+    "effect_target": "rep_loss",
+    "effect_value": 0.50
+  },
+  "good_boss": {
+    "name": "Good Boss",
+    "description": "Crew loyalty +10 after each completed job. They'd take a bullet for you.",
+    "category": "influence",
+    "class_affinity": ["Brawler", "Smuggler", "Con Man", "Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "crew_loyalty_gain",
+    "effect_value": 10
+  },
+  "well_connected": {
+    "name": "Well Connected",
+    "description": "Hire candidate pool shows +2 extra candidates (6 total).",
+    "category": "influence",
+    "class_affinity": ["Fixer"],
+    "effect_type": "stat_bonus",
+    "effect_target": "hire_pool_size",
+    "effect_value": 2
+  },
+  "word_gets_around": {
+    "name": "Word Gets Around",
+    "description": "All factions gain +2 rep on each level-up. Your name means something.",
+    "category": "influence",
+    "class_affinity": ["Con Man"],
+    "effect_type": "passive",
+    "effect_target": "levelup_rep_bonus",
+    "effect_value": 2
+  },
+  "made_man": {
+    "name": "Made Man",
+    "description": "Immune to rep loss below 25 in any faction. They need you too much.",
+    "category": "influence",
+    "class_affinity": ["Brawler"],
+    "effect_type": "passive",
+    "effect_target": "min_rep_floor",
+    "effect_value": 25
+  }
+}

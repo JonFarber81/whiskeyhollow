@@ -17,6 +17,13 @@ class HeatSystem:
 
     def increase(self, amount: int, reason: str = "") -> None:
         """Raise heat, clamped to 100. Trigger events at thresholds."""
+        from entities.perks import has_perk
+        player = self.engine.player
+
+        # Phase 16: Ghost perk — reduce combat heat by 25%
+        if has_perk(player, "ghost") and reason and "combat" in reason.lower():
+            amount = max(1, int(amount * 0.75))
+
         old = self.engine.heat
         self.engine.heat = min(100, self.engine.heat + amount)
         new = self.engine.heat
@@ -45,7 +52,18 @@ class HeatSystem:
 
     def passive_decay(self) -> None:
         """Called each chapter end — heat drops naturally over time."""
-        # INT modifier speeds up decay
-        stats = getattr(self.engine.player, "stats", None)
+        from entities.perks import has_perk
+        player = self.engine.player
+        stats = getattr(player, "stats", None)
         decay = 3 + (stats.int_mod if stats else 0)
+
+        # Phase 15: Pendergast Soldier rank perk — heat decays 10% faster
+        standing = getattr(player, "faction_standing", None)
+        if standing and standing.get_rep("pendergast") >= 45:
+            decay = int(decay * 1.10)
+
+        # Phase 16: Friends in Low Places perk — +5 decay
+        if has_perk(player, "friends_in_low_places"):
+            decay += 5
+
         self.engine.heat = max(0, self.engine.heat - decay)

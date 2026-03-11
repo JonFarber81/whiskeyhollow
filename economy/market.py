@@ -34,12 +34,24 @@ class Market:
         # Current fluctuation multipliers per contraband key
         self._fluctuation: Dict[str, float] = {k: 1.0 for k in CONTRABAND_TYPES}
 
-    def sell_price(self, contraband_key: str, district: str) -> int:
+    def sell_price(self, contraband_key: str, district: str, player=None) -> int:
         """Return current sell price for contraband in the given district."""
+        from entities.perks import has_perk
         base = CONTRABAND_TYPES[contraband_key].base_value
         district_mod = DISTRICT_MODIFIERS.get(district, {}).get(contraband_key, 1.0)
         fluct = self._fluctuation.get(contraband_key, 1.0)
-        return max(1, int(base * district_mod * fluct))
+        price = max(1, int(base * district_mod * fluct))
+
+        # Phase 15: Jazz District Barfly rank perk — +15% sell price
+        if player:
+            standing = getattr(player, "faction_standing", None)
+            if standing and standing.get_rep("jazz_district") >= 10:
+                price = int(price * 1.15)
+            # Phase 16: Black Market perk — +15% sell price (stacks)
+            if has_perk(player, "black_market"):
+                price = int(price * 1.15)
+
+        return max(1, price)
 
     def fluctuate_prices(self) -> None:
         """Randomize price modifiers each chapter turn."""

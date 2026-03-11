@@ -84,6 +84,34 @@ class EventHandler:
             # ? = Shift+/
             from ui.menus import run_help_screen
             run_help_screen(self.context, self.console)
+        elif key == tcod.event.KeySym.s and event.mod & tcod.event.Modifier.CTRL:
+            # Ctrl+S — quick save (slot 0)
+            self.engine.save_game(slot=0)
+        elif key == tcod.event.KeySym.p and self.context and self.console:
+            # p — perk list viewer
+            from ui.menus import run_perk_viewer
+            run_perk_viewer(self.engine, self.context, self.console)
+        elif key == tcod.event.KeySym.v:
+            # v — Vanish perk (once per run)
+            self._use_vanish_perk()
+
+    def _use_vanish_perk(self) -> None:
+        """Vanish perk — reduce heat to 0 once per run."""
+        from entities.perks import has_perk
+        from ui import color as Color
+        player = self.engine.player
+        if not has_perk(player, "vanish"):
+            return
+        if getattr(self.engine, "_vanish_used", False):
+            self.engine.message_log.add_message(
+                "Vanish already used this run.", fg=Color.MID_GREY
+            )
+            return
+        self.engine.heat = 0
+        self.engine._vanish_used = True
+        self.engine.message_log.add_message(
+            "You vanish into the shadows. Heat drops to zero.", fg=Color.PARCHMENT
+        )
 
     def perform_bump(self, dx: int, dy: int) -> None:
         """Move the player or attack an adjacent actor."""
@@ -118,3 +146,8 @@ class EventHandler:
         self.engine.update_fov()
         self.engine.handle_enemy_turns()
         self.engine.turn_count += 1
+        # Phase 15: fire level-up perk screen if needed
+        if self.engine.pending_level_up and self.context and self.console:
+            from ui.menus import run_perk_selection
+            run_perk_selection(self.engine, self.context, self.console)
+            self.engine.consume_level_up()

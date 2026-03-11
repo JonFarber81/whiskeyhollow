@@ -103,6 +103,35 @@ class CrewMember:
             self.status = CrewStatus.AVAILABLE
             self.hp = self.max_hp
 
+    # -----------------------------------------------------------------------
+    # Serialization (Phase 14)
+    # -----------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "role": self.role.value,
+            "loyalty": self.loyalty,
+            "skills": dict(self.skills),
+            "wage": self.wage,
+            "status": self.status.value,
+            "hp": self.hp,
+            "max_hp": self.max_hp,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "CrewMember":
+        return cls(
+            name=data["name"],
+            role=CrewRole(data["role"]),
+            loyalty=data["loyalty"],
+            skills=data.get("skills", {}),
+            wage=data.get("wage", 50),
+            status=CrewStatus(data.get("status", "available")),
+            hp=data.get("hp", 20),
+            max_hp=data.get("max_hp", 20),
+        )
+
 
 # ---------------------------------------------------------------------------
 # Crew roster attached to the engine
@@ -157,3 +186,17 @@ class CrewRoster:
             if m.role == role and m.is_active:
                 return m
         return None
+
+    # -----------------------------------------------------------------------
+    # Serialization (Phase 14)
+    # -----------------------------------------------------------------------
+
+    def to_dict(self) -> list:
+        return [m.to_dict() for m in self.members]
+
+    @classmethod
+    def from_dict(cls, data: list) -> "CrewRoster":
+        roster = cls()
+        for md in data:
+            roster.members.append(CrewMember.from_dict(md))
+        return roster

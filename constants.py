@@ -1,8 +1,14 @@
 """Global constants for Whiskey Hollow."""
 
-# Font — path to a TTF font and tile cell size in pixels.
-# Larger tile sizes = bigger, more readable text.
-# Swap FONT_PATH to any monospace TTF on your system.
+# ---------------------------------------------------------------------------
+# Phase 11: CP437 Bitmap Tilesheet
+# ---------------------------------------------------------------------------
+USE_TILESHEET = False  # Set True once you have a CP437 PNG in TILESET_PATH
+TILESET_PATH = "data/tiles/Alloy_curses_12x12.png"
+TILESET_COLUMNS = 16
+TILESET_ROWS = 16
+
+# Font fallback (used when USE_TILESHEET is False or file not found)
 FONT_PATH = "/System/Library/Fonts/SFNSMono.ttf"
 FONT_FALLBACK = "/System/Library/Fonts/Supplemental/Andale Mono.ttf"
 TILE_WIDTH = 12
