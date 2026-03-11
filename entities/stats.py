@@ -91,3 +91,28 @@ class Stats:
             f"CHA {self.charisma:2d} ({self.cha_mod:+d}) | "
             f"LCK {self.luck:2d} ({self.luck_mod:+d})"
         )
+
+    # -----------------------------------------------------------------------
+    # Serialization (Phase 14)
+    # -----------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        return {
+            "strength": self.strength,
+            "dexterity": self.dexterity,
+            "intelligence": self.intelligence,
+            "charisma": self.charisma,
+            "luck": self.luck,
+            "skill_points": self.skill_points,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Stats":
+        return cls(
+            strength=data["strength"],
+            dexterity=data["dexterity"],
+            intelligence=data["intelligence"],
+            charisma=data["charisma"],
+            luck=data["luck"],
+            skill_points=data.get("skill_points", 0),
+        )

@@ -503,3 +503,220 @@ def _draw_skill_menu(console, engine, stats, stat_names, labels, selected) -> No
         bar = "█" * (val // 2)
         console.print(x=ox + 2, y=oy + 5 + i * 3, string=f"{prefix}{short[stat]} {val:2d} ({mod:+d})  {bar}", fg=fg)
         console.print(x=ox + 4, y=oy + 6 + i * 3, string=labels[stat], fg=Color.SEPIA)
+
+
+# ---------------------------------------------------------------------------
+# Main Menu (Phase 14) — New Game / Continue / Quit
+# ---------------------------------------------------------------------------
+
+def run_main_menu(
+    context: tcod.context.Context,
+    root_console: tcod.console.Console,
+    saves: list,
+) -> str:
+    """Show main menu. Returns 'new', 'continue', or 'quit'."""
+    has_save = any(s.get("exists") for s in saves)
+    options = []
+    if has_save:
+        options.append(("continue", "Continue"))
+    options.append(("new", "New Game"))
+    options.append(("quit", "Quit"))
+
+    selected = 0
+
+    while True:
+        root_console.clear()
+        _draw_main_menu(root_console, options, selected, saves)
+        context.present(root_console)
+
+        for event in tcod.event.wait():
+            if isinstance(event, tcod.event.Quit):
+                return "quit"
+            if isinstance(event, tcod.event.KeyDown):
+                key = event.sym
+                if key in (tcod.event.KeySym.UP, tcod.event.KeySym.k):
+                    selected = (selected - 1) % len(options)
+                elif key in (tcod.event.KeySym.DOWN, tcod.event.KeySym.j):
+                    selected = (selected + 1) % len(options)
+                elif key == tcod.event.KeySym.RETURN:
+                    return options[selected][0]
+                elif key == tcod.event.KeySym.ESCAPE:
+                    return "quit"
+
+
+def _draw_main_menu(
+    console: tcod.console.Console,
+    options: list,
+    selected: int,
+    saves: list,
+) -> None:
+    cx = SCREEN_WIDTH // 2
+    cy = SCREEN_HEIGHT // 2 - 10
+
+    console.print(x=cx - 7, y=cy, string="WHISKEY HOLLOW", fg=Color.AMBER)
+    console.print(x=cx - 17, y=cy + 1, string="Kansas City, 1924 — A Prohibition-Era Roguelike", fg=Color.SEPIA)
+    console.print(x=cx - 10, y=cy + 2, string="─" * 20, fg=Color.AMBER_DARK)
+
+    for i, (key, label) in enumerate(options):
+        y = cy + 5 + i * 2
+        if i == selected:
+            console.print(x=cx - 6, y=y, string=f"▶  {label}", fg=Color.GOLD)
+        else:
+            console.print(x=cx - 6, y=y, string=f"   {label}", fg=Color.LIGHT_GREY)
+
+    # Show save info if a save exists
+    save = next((s for s in saves if s.get("exists")), None)
+    if save:
+        console.print(
+            x=cx - 20, y=cy + 14,
+            string=f"Save: {save['name']} ({save['char_class']}) — "
+                   f"Turn {save['turn']} | ${save['cash']:,} | {save['district']}",
+            fg=Color.MID_GREY,
+        )
+
+    console.print(
+        x=cx - 15, y=SCREEN_HEIGHT - 3,
+        string="[↑↓] Navigate   [Enter] Select   [Esc] Quit",
+        fg=Color.MID_GREY,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Perk Selection Menu (Phase 16)
+# ---------------------------------------------------------------------------
+
+def run_perk_selection(
+    engine,
+    context: tcod.context.Context,
+    console: tcod.console.Console,
+    char_class=None,
+    is_creation: bool = False,
+) -> Optional[str]:
+    """
+    Show a perk selection overlay and return the chosen perk key.
+    If is_creation=True, used at character creation (engine may be None).
+    Otherwise used at level-up with a live engine.
+    """
+    from entities.perks import get_perk_options, PERKS
+    from entities.character_class import CharacterClass
+
+    # Resolve class value string
+    if char_class is not None:
+        class_val = char_class.value if isinstance(char_class, CharacterClass) else str(char_class)
+    elif engine:
+        cc = getattr(engine, "char_class", None)
+        class_val = cc.value if cc else "Brawler"
+    else:
+        class_val = "Brawler"
+
+    owned = list(getattr(getattr(engine, "player", None), "perks", [])) if engine else []
+
+    # Draw 3 options
+    rng_src = getattr(engine, "rng", None) if engine else None
+    options = get_perk_options(class_val, owned, count=3, rng=rng_src)
+    if not options:
+        return None
+
+    selected = 0
+
+    while True:
+        console.clear()
+        if engine:
+            engine.render(console)
+        _draw_perk_selection(console, options, selected, is_creation)
+        context.present(console)
+
+        for event in tcod.event.wait():
+            if isinstance(event, tcod.event.Quit):
+                raise SystemExit()
+            if isinstance(event, tcod.event.KeyDown):
+                key = event.sym
+                if key in (tcod.event.KeySym.UP, tcod.event.KeySym.k):
+                    selected = (selected - 1) % len(options)
+                elif key in (tcod.event.KeySym.DOWN, tcod.event.KeySym.j):
+                    selected = (selected + 1) % len(options)
+                elif key == tcod.event.KeySym.RETURN:
+                    perk = options[selected]
+                    if engine and engine.player:
+                        engine.player.perks.append(perk.key)
+                        from main import _apply_immediate_perk
+                        _apply_immediate_perk(engine.player, perk.key)
+                        engine.message_log.add_message(
+                            f"Perk acquired: {perk.name}!", fg=Color.GOLD
+                        )
+                        # Phase 16: Word Gets Around — all factions +2 rep on level-up
+                        from entities.perks import has_perk
+                        if has_perk(engine.player, "word_gets_around"):
+                            standing = getattr(engine.player, "faction_standing", None)
+                            if standing:
+                                for fk in standing.rep:
+                                    standing.rep[fk] = min(100, standing.rep[fk] + 2)
+                    return perk.key
+                elif key == tcod.event.KeySym.ESCAPE and not is_creation:
+                    return None  # Level-up: skip perk (rare edge case)
+
+
+def _draw_perk_selection(
+    console: tcod.console.Console,
+    options: list,
+    selected: int,
+    is_creation: bool,
+) -> None:
+    from entities.perks import PERKS
+    title = " CHOOSE A STARTING PERK " if is_creation else " LEVEL UP — CHOOSE A PERK "
+    ox, oy, w, h = 8, 5, SCREEN_WIDTH - 16, SCREEN_HEIGHT - 10
+    console.draw_frame(x=ox, y=oy, width=w, height=h, title=title, fg=Color.GOLD, bg=Color.PANEL_BG)
+    console.print(x=ox + 2, y=oy + 2, string="[↑↓] Browse   [Enter] Pick", fg=Color.MID_GREY)
+
+    cat_colors = {
+        "combat": Color.RED,
+        "economy": Color.GOLD,
+        "shadow": Color.PARCHMENT,
+        "influence": Color.AMBER,
+    }
+
+    for i, perk in enumerate(options):
+        row_y = oy + 4 + i * 6
+        fg = Color.GOLD if i == selected else Color.PARCHMENT
+        prefix = "▶ " if i == selected else "  "
+        cat_fg = cat_colors.get(perk.category, Color.SEPIA)
+        console.print(x=ox + 2, y=row_y, string=f"{prefix}{perk.name}", fg=fg)
+        console.print(x=ox + 4, y=row_y + 1, string=f"[{perk.category.upper()}]", fg=cat_fg)
+        console.print(x=ox + 4, y=row_y + 2, string=perk.description[:w - 8], fg=Color.SEPIA)
+        if i < len(options) - 1:
+            console.print(x=ox + 2, y=row_y + 4, string="─" * (w - 4), fg=Color.AMBER_DARK)
+
+
+# ---------------------------------------------------------------------------
+# Perk Viewer (Phase 16) — Press 'p' to view owned perks
+# ---------------------------------------------------------------------------
+
+def run_perk_viewer(
+    engine: "Engine",
+    context: tcod.context.Context,
+    console: tcod.console.Console,
+) -> None:
+    from entities.perks import PERKS
+    perks_owned = getattr(engine.player, "perks", [])
+
+    console.clear()
+    engine.render(console)
+    ox, oy, w, h = 8, 3, SCREEN_WIDTH - 16, SCREEN_HEIGHT - 6
+    console.draw_frame(x=ox, y=oy, width=w, height=h, title=" YOUR PERKS ", fg=Color.GOLD, bg=Color.PANEL_BG)
+
+    if not perks_owned:
+        console.print(x=ox + 2, y=oy + 3, string="No perks yet. Level up to earn them!", fg=Color.MID_GREY)
+    else:
+        for i, key in enumerate(perks_owned):
+            perk = PERKS.get(key)
+            if perk:
+                row_y = oy + 2 + i * 3
+                console.print(x=ox + 2, y=row_y, string=f"★ {perk.name}", fg=Color.GOLD)
+                console.print(x=ox + 4, y=row_y + 1, string=perk.description[:w - 8], fg=Color.SEPIA)
+
+    console.print(x=ox + 2, y=oy + h - 2, string="Press any key to close.", fg=Color.MID_GREY)
+    context.present(console)
+
+    for event in tcod.event.wait():
+        if isinstance(event, (tcod.event.KeyDown, tcod.event.Quit)):
+            return

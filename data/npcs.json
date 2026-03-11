@@ -1,0 +1,210 @@
+{
+  "big_jim_torrio": {
+    "name": "Big Jim Torrio",
+    "faction": "union_station",
+    "tier": "boss",
+    "char": "T",
+    "color": [220, 140, 40],
+    "hp": 80,
+    "attack": 6,
+    "defense": 4,
+    "dialogue": {
+      "on_meet": ["So you're the new blood. Show me what you're worth first."],
+      "on_job_complete": ["I knew you had grit. Here's your cut, kid."],
+      "on_attack": ["Nobody crosses the Crew and walks out of Union Station!"],
+      "on_low_hp": ["I've survived worse than you, flatfoot. Don't push your luck."]
+    },
+    "loot": ["tommy_gun"],
+    "phase_threshold": 0.5,
+    "phase_two_behavior": "calls_reinforcements",
+    "rep_reward": 25,
+    "cash_reward": 500,
+    "unlock_condition": {"faction": "union_station", "min_rep": 65}
+  },
+  "the_ox": {
+    "name": "The Ox",
+    "faction": "river_market",
+    "tier": "boss",
+    "char": "O",
+    "color": [180, 80, 40],
+    "hp": 90,
+    "attack": 8,
+    "defense": 5,
+    "dialogue": {
+      "on_meet": ["*cracks knuckles* The Syndicate don't need words."],
+      "on_attack": ["I'll feed you to the river!"],
+      "on_low_hp": ["You hit like a freight train, I'll give you that..."]
+    },
+    "loot": ["sawed_off"],
+    "phase_threshold": 0.4,
+    "phase_two_behavior": "berserk",
+    "rep_reward": 20,
+    "cash_reward": 400,
+    "unlock_condition": {"faction": "river_market", "min_rep": 65}
+  },
+  "dutch_malone": {
+    "name": "Dutch Malone",
+    "faction": "jazz_district",
+    "tier": "boss",
+    "char": "D",
+    "color": [140, 100, 200],
+    "hp": 65,
+    "attack": 5,
+    "defense": 3,
+    "dialogue": {
+      "on_meet": ["You got nerve walking into my joint. I like that."],
+      "on_attack": ["Music's over for you, pal!"],
+      "on_low_hp": ["Next round's on me if you let me walk out of here..."]
+    },
+    "loot": ["pistol_1911"],
+    "phase_threshold": 0.5,
+    "phase_two_behavior": "calls_reinforcements",
+    "rep_reward": 20,
+    "cash_reward": 350,
+    "unlock_condition": {"faction": "jazz_district", "min_rep": 65}
+  },
+  "ward_captain_higgins": {
+    "name": "Ward Captain Higgins",
+    "faction": "pendergast",
+    "tier": "contact",
+    "char": "H",
+    "color": [100, 160, 100],
+    "hp": 40,
+    "attack": 3,
+    "defense": 2,
+    "dialogue": {
+      "on_meet": ["Tom Pendergast has an interest in capable people. What can you do?"],
+      "on_job_complete": ["Good work. The Machine remembers its friends."]
+    },
+    "loot": [],
+    "phase_threshold": 1.0,
+    "phase_two_behavior": "none",
+    "rep_reward": 10,
+    "cash_reward": 0,
+    "unlock_condition": {"faction": "pendergast", "min_rep": 10}
+  },
+  "sal_the_driver": {
+    "name": "Sal the Driver",
+    "faction": "union_station",
+    "tier": "contact",
+    "char": "S",
+    "color": [160, 120, 60],
+    "hp": 35,
+    "attack": 3,
+    "defense": 2,
+    "dialogue": {
+      "on_meet": ["I can get anything anywhere in this city. For a price."],
+      "on_job_complete": ["Smooth as silk. Torrio will hear about this."]
+    },
+    "loot": [],
+    "phase_threshold": 1.0,
+    "phase_two_behavior": "none",
+    "rep_reward": 8,
+    "cash_reward": 0,
+    "unlock_condition": {"faction": "union_station", "min_rep": 10}
+  },
+  "dago_deluca": {
+    "name": "Dago DeLuca",
+    "faction": "river_market",
+    "tier": "contact",
+    "char": "d",
+    "color": [180, 80, 40],
+    "hp": 50,
+    "attack": 5,
+    "defense": 3,
+    "dialogue": {
+      "on_meet": ["You want work? You'd better be ready to earn it."],
+      "on_job_complete": ["The Ox says you're solid. That means something around here."]
+    },
+    "loot": [],
+    "phase_threshold": 1.0,
+    "phase_two_behavior": "none",
+    "rep_reward": 10,
+    "cash_reward": 0,
+    "unlock_condition": {"faction": "river_market", "min_rep": 25}
+  },
+  "mama_dolores": {
+    "name": "Mama Dolores",
+    "faction": "jazz_district",
+    "tier": "contact",
+    "char": "M",
+    "color": [180, 140, 200],
+    "hp": 30,
+    "attack": 2,
+    "defense": 1,
+    "dialogue": {
+      "on_meet": ["Sugar, everyone who comes through that door wants something. What do you need?"],
+      "on_job_complete": ["You're good for business. Come back anytime."]
+    },
+    "loot": [],
+    "phase_threshold": 1.0,
+    "phase_two_behavior": "none",
+    "rep_reward": 8,
+    "cash_reward": 0,
+    "unlock_condition": {"faction": "jazz_district", "min_rep": 10}
+  },
+  "detective_flynn": {
+    "name": "Detective Flynn",
+    "faction": "kcpd",
+    "tier": "rival",
+    "char": "F",
+    "color": [100, 140, 200],
+    "hp": 60,
+    "attack": 5,
+    "defense": 3,
+    "dialogue": {
+      "on_meet": ["I've been watching you. You're going to make a mistake, and I'll be there."],
+      "on_attack": ["End of the line, hood!"],
+      "on_low_hp": ["You haven't seen the last of me..."]
+    },
+    "loot": ["revolver_38"],
+    "phase_threshold": 0.5,
+    "phase_two_behavior": "calls_reinforcements",
+    "rep_reward": 15,
+    "cash_reward": 200,
+    "unlock_condition": {"heat": 60}
+  },
+  "captain_morrison": {
+    "name": "Captain Morrison",
+    "faction": "kcpd",
+    "tier": "boss",
+    "char": "C",
+    "color": [60, 100, 180],
+    "hp": 75,
+    "attack": 6,
+    "defense": 4,
+    "dialogue": {
+      "on_meet": ["You walked into the wrong precinct, boy."],
+      "on_attack": ["I built this city! You're nothing!"],
+      "on_low_hp": ["I've got fifty men outside... you won't get far..."]
+    },
+    "loot": ["pistol_1911"],
+    "phase_threshold": 0.4,
+    "phase_two_behavior": "calls_reinforcements",
+    "rep_reward": 20,
+    "cash_reward": 300,
+    "unlock_condition": {"faction": "kcpd", "min_rep": 65}
+  },
+  "tom_pendergast": {
+    "name": "Tom Pendergast",
+    "faction": "pendergast",
+    "tier": "boss",
+    "char": "P",
+    "color": [60, 180, 60],
+    "hp": 70,
+    "attack": 4,
+    "defense": 5,
+    "dialogue": {
+      "on_meet": ["I run this city. Every judge, every cop, every ward captain answers to me. And now... I'm looking at you."],
+      "on_job_complete": ["You've done good work. Kansas City doesn't forget."],
+      "on_attack": ["You dare raise a hand to the Machine?!"],
+      "on_low_hp": ["I have friends in every office in this city. You can't win."]
+    },
+    "loot": [],
+    "phase_threshold": 0.5,
+    "phase_two_behavior": "calls_reinforcements",
+    "rep_reward": 30,
+    "cash_reward": 1000,
+    "unlock_condition": {"faction": "pendergast", "min_rep": 85}
+  }
+}

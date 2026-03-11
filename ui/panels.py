@@ -53,8 +53,6 @@ def _render_status_panel(console: tcod.console.Console, engine: Engine) -> None:
             console.print(x=x + 1, y=y + 5, string=f"INT {stats.intelligence:2d} CHA {stats.charisma:2d}", fg=Color.SEPIA)
             console.print(x=x + 1, y=y + 6, string=f"LCK {stats.luck:2d}  SP:{stats.skill_points}", fg=Color.SEPIA)
 
-    console.print(x=x + 1, y=y + 8, string=f"Cash: ${engine.cash:,}", fg=Color.GOLD)
-
     # Heat bar
     heat_pct = engine.heat / 100
     heat_color = (
@@ -67,6 +65,15 @@ def _render_status_panel(console: tcod.console.Console, engine: Engine) -> None:
     heat_bar = "█" * filled + "░" * (bar_width - filled)
     console.print(x=x + 1, y=y + 10, string=f"Heat: {engine.heat}%", fg=heat_color)
     console.print(x=x + 1, y=y + 11, string=heat_bar, fg=heat_color)
+
+    # Phase 15: Display level
+    level = engine._get_player_level()
+    console.print(x=x + 1, y=y + 8, string=f"Lvl:  {level}   Cash: ${engine.cash:,}", fg=Color.GOLD)
+
+    # Phase 16: Display perk count
+    perks = getattr(engine.player, "perks", [])
+    if perks:
+        console.print(x=x + 1, y=y + 9, string=f"Perks: {len(perks)}  [p] view", fg=Color.AMBER_DARK)
 
     console.print(x=x + 1, y=y + 13, string=f"Turn: {engine.turn_count}", fg=Color.MID_GREY)
     console.print(x=x + 1, y=y + 14, string=f"Dist: {engine.district}", fg=Color.SEPIA)

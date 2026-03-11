@@ -61,6 +61,99 @@ class GameMap:
         )
         self.explored |= self.visible
 
+    # -----------------------------------------------------------------------
+    # Serialization (Phase 14)
+    # -----------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Serialize map to JSON-compatible dict."""
+        tiles_list = []
+        for x in range(self.width):
+            col = []
+            for y in range(self.height):
+                t = self.tiles[x, y]
+                col.append({
+                    "walkable": bool(t["walkable"]),
+                    "transparent": bool(t["transparent"]),
+                    "dark": [int(t["dark"]["ch"]),
+                             [int(v) for v in t["dark"]["fg"]],
+                             [int(v) for v in t["dark"]["bg"]]],
+                    "light": [int(t["light"]["ch"]),
+                              [int(v) for v in t["light"]["fg"]],
+                              [int(v) for v in t["light"]["bg"]]],
+                })
+            tiles_list.append(col)
+
+        # Serialize living non-player actors
+        entities_data = []
+        from entities.actor import Actor
+        for e in self.entities:
+            if isinstance(e, Actor) and e.is_alive:
+                entities_data.append({
+                    "type": "actor",
+                    "x": e.x, "y": e.y,
+                    "name": e.name,
+                    "char": e.char,
+                    "color": list(e.color),
+                    "fighter": e.fighter.to_dict() if e.fighter else None,
+                    "npc_key": getattr(e, "npc_key", None),
+                    "is_boss": getattr(e, "is_boss", False),
+                })
+
+        return {
+            "width": self.width,
+            "height": self.height,
+            "tiles": tiles_list,
+            "explored": self.explored.tolist(),
+            "entities": entities_data,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict, player_entity=None) -> "GameMap":
+        gmap = cls(data["width"], data["height"])
+
+        # Restore tiles
+        for x, col in enumerate(data["tiles"]):
+            for y, td in enumerate(col):
+                dark = (td["dark"][0], tuple(td["dark"][1]), tuple(td["dark"][2]))
+                light = (td["light"][0], tuple(td["light"][1]), tuple(td["light"][2]))
+                gmap.tiles[x, y] = np.array(
+                    (td["walkable"], td["transparent"], dark, light),
+                    dtype=tile_types.tile_dt,
+                )
+
+        # Restore explored
+        gmap.explored = np.array(data["explored"], dtype=bool)
+
+        # Re-attach player
+        if player_entity:
+            player_entity.game_map = gmap
+            gmap.entities.add(player_entity)
+
+        # Restore non-player actors
+        from entities.actor import Actor
+        from components.fighter import Fighter
+        from components.ai.hostile_ai import HostileEnemy
+
+        for ed in data.get("entities", []):
+            if ed["type"] == "actor":
+                fighter = None
+                if ed.get("fighter"):
+                    fighter = Fighter.from_dict(ed["fighter"])
+                actor = Actor(
+                    x=ed["x"], y=ed["y"],
+                    char=ed["char"],
+                    color=tuple(ed["color"]),
+                    name=ed["name"],
+                    fighter=fighter,
+                    ai=HostileEnemy(),
+                    game_map=gmap,
+                )
+                actor.npc_key = ed.get("npc_key")
+                actor.is_boss = ed.get("is_boss", False)
+
+        return gmap
+
     def render(self, console: tcod.console.Console) -> None:
         """Render map tiles respecting FOV and exploration."""
         # Visible tiles use "light" graphic; explored-but-not-visible use "dark"

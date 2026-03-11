@@ -68,3 +68,18 @@ DOOR_OPEN = new_tile(
 
 # Void / unexplored shroud
 SHROUD = np.array((ord(" "), (0, 0, 0), (0, 0, 0)), dtype=graphic_dt)
+
+# Phase 12: Static map special tiles
+BAR_COUNTER = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(ord("="), (100, 70, 30), (30, 22, 12)),
+    light=(ord("="), (160, 120, 50), (50, 38, 20)),
+)
+
+CRATE = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(ord("c"), (80, 60, 30), (30, 22, 12)),
+    light=(ord("c"), (130, 95, 45), (50, 38, 20)),
+)

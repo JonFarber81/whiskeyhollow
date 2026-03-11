@@ -89,3 +89,24 @@ class Fighter:
         if engine.player is self.entity:
             from engine.exceptions import PlayerDead
             raise PlayerDead()
+
+    # -----------------------------------------------------------------------
+    # Serialization (Phase 14)
+    # -----------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        return {
+            "hp": self.hp,
+            "max_hp": self.max_hp,
+            "base_attack": self.base_attack,
+            "base_defense": self.base_defense,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Fighter":
+        return cls(
+            hp=data["hp"],
+            max_hp=data["max_hp"],
+            base_attack=data["base_attack"],
+            base_defense=data["base_defense"],
+        )

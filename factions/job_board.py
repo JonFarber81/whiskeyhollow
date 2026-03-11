@@ -140,13 +140,32 @@ def generate_jobs(
 def resolve_job_success(job: Job, engine: Engine) -> None:
     """Apply success rewards to the engine/player."""
     from ui import color as Color
-    engine.cash += job.cash_reward
+    from entities.perks import has_perk
+    player = engine.player
+
+    cash_reward = job.cash_reward
+
+    # Phase 15: Union Station Runner rank perk — +10% delivery cash
+    if job.job_type == JobType.DELIVERY:
+        standing = getattr(player, "faction_standing", None)
+        if standing and standing.get_rep("union_station") >= 10:
+            cash_reward = int(cash_reward * 1.10)
+
+    # Phase 16: Numbers Runner perk — delivery +20%
+    if job.job_type == JobType.DELIVERY and has_perk(player, "numbers_runner"):
+        cash_reward = int(cash_reward * 1.20)
+
+    # Phase 16: Nest Egg perk — +$25 on every job
+    if has_perk(player, "nest_egg"):
+        cash_reward += 25
+
+    engine.cash += cash_reward
     engine.message_log.add_message(
-        f"Job complete: {job.title}. +${job.cash_reward}, +{job.rep_reward} rep.",
+        f"Job complete: {job.title}. +${cash_reward}, +{job.rep_reward} rep.",
         fg=Color.GREEN,
     )
 
-    standing = getattr(engine.player, "faction_standing", None)
+    standing = getattr(player, "faction_standing", None)
     if standing:
         # Class bonus to rep gain
         from entities.character_class import CLASS_DEFS, CharacterClass
@@ -156,13 +175,25 @@ def resolve_job_success(job: Job, engine: Engine) -> None:
             cd = CLASS_DEFS.get(char_class)
             if cd:
                 rep_mult = 1.0 + cd.bonus.faction_rep_gain_bonus
+        # Phase 16: Natural Politician perk — +10% rep
+        if has_perk(player, "natural_politician"):
+            rep_mult *= 1.10
         final_rep = max(1, int(job.rep_reward * rep_mult))
         standing.gain_rep(job.faction_key, final_rep, engine)
+
+        # Phase 16: Word Gets Around perk handled in level-up
+
+    # Phase 16: Good Boss perk — crew loyalty +10 per job
+    if has_perk(player, "good_boss"):
+        crew = getattr(engine, "crew", None)
+        if crew:
+            for m in crew.active:
+                m.gain_loyalty(10)
 
     # Grant skill point every 3rd job (tracked on engine)
     engine.jobs_completed = getattr(engine, "jobs_completed", 0) + 1
     if engine.jobs_completed % 3 == 0:
-        stats = getattr(engine.player, "stats", None)
+        stats = getattr(player, "stats", None)
         if stats:
             stats.skill_points += 1
             engine.message_log.add_message(
