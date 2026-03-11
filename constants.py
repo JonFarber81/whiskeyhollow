@@ -3,8 +3,8 @@
 # ---------------------------------------------------------------------------
 # Phase 11: CP437 Bitmap Tilesheet
 # ---------------------------------------------------------------------------
-USE_TILESHEET = False  # Set True once you have a CP437 PNG in TILESET_PATH
-TILESET_PATH = "data/tiles/Alloy_curses_12x12.png"
+USE_TILESHEET = True  # Set True once you have a CP437 PNG in TILESET_PATH
+TILESET_PATH = "data/tiles/Potash_10x10.png"
 TILESET_COLUMNS = 16
 TILESET_ROWS = 16
 
