@@ -1,0 +1,82 @@
+{
+  "encounter_west_bottoms_day": [
+    {"range": [1, 25], "result": "nothing"},
+    {"range": [26, 50], "result": "rival_goon_1"},
+    {"range": [51, 70], "result": "beat_cop_patrol"},
+    {"range": [71, 88], "result": "drunk_civilian"},
+    {"range": [89, 95], "result": "rival_goon_2"},
+    {"range": [96, 100], "result": "made_man_ambush"}
+  ],
+  "encounter_west_bottoms_night": [
+    {"range": [1, 20], "result": "beat_cop_patrol"},
+    {"range": [21, 50], "result": "rival_goon_2"},
+    {"range": [51, 75], "result": "nothing"},
+    {"range": [76, 90], "result": "drunk_civilian"},
+    {"range": [91, 98], "result": "made_man_ambush"},
+    {"range": [99, 100], "result": "mob_boss_encounter"}
+  ],
+  "encounter_river_market": [
+    {"range": [1, 30], "result": "nothing"},
+    {"range": [31, 55], "result": "rival_goon_1"},
+    {"range": [56, 75], "result": "beat_cop_patrol"},
+    {"range": [76, 90], "result": "rival_goon_2"},
+    {"range": [91, 100], "result": "made_man_ambush"}
+  ],
+  "encounter_18th_vine": [
+    {"range": [1, 35], "result": "nothing"},
+    {"range": [36, 55], "result": "drunk_civilian"},
+    {"range": [56, 70], "result": "rival_goon_1"},
+    {"range": [71, 85], "result": "detective_tail"},
+    {"range": [86, 95], "result": "beat_cop_patrol"},
+    {"range": [96, 100], "result": "mob_boss_encounter"}
+  ],
+  "encounter_union_station": [
+    {"range": [1, 20], "result": "nothing"},
+    {"range": [21, 45], "result": "rival_goon_1"},
+    {"range": [46, 65], "result": "beat_cop_patrol"},
+    {"range": [66, 82], "result": "detective_tail"},
+    {"range": [83, 95], "result": "rival_goon_2"},
+    {"range": [96, 100], "result": "made_man_ambush"}
+  ],
+  "encounter_westport": [
+    {"range": [1, 30], "result": "nothing"},
+    {"range": [31, 50], "result": "drunk_civilian"},
+    {"range": [51, 70], "result": "detective_tail"},
+    {"range": [71, 85], "result": "beat_cop_patrol"},
+    {"range": [86, 96], "result": "rival_goon_2"},
+    {"range": [97, 100], "result": "mob_boss_encounter"}
+  ],
+  "loot_common": [
+    {"range": [1, 30], "result": "cash_small"},
+    {"range": [31, 55], "result": "cash_medium"},
+    {"range": [56, 70], "result": "whiskey_case"},
+    {"range": [71, 82], "result": "knife"},
+    {"range": [83, 90], "result": "brass_knuckles"},
+    {"range": [91, 96], "result": "revolver_38"},
+    {"range": [97, 100], "result": "evidence"}
+  ],
+  "loot_rare": [
+    {"range": [1, 20], "result": "pistol_1911"},
+    {"range": [21, 45], "result": "cash_large"},
+    {"range": [46, 65], "result": "whiskey_case"},
+    {"range": [66, 80], "result": "shotgun_winchester"},
+    {"range": [81, 92], "result": "gin_case"},
+    {"range": [93, 98], "result": "tommy_gun"},
+    {"range": [99, 100], "result": "forged_documents"}
+  ],
+  "heat_events": [
+    {"range": [1, 40], "result": "nothing"},
+    {"range": [41, 65], "result": "cop_whistle"},
+    {"range": [66, 82], "result": "backup_called"},
+    {"range": [83, 95], "result": "detective_investigates"},
+    {"range": [96, 100], "result": "raid_incoming"}
+  ],
+  "job_complications": [
+    {"range": [1, 35], "result": "none"},
+    {"range": [36, 55], "result": "extra_guards"},
+    {"range": [56, 70], "result": "rival_also_working"},
+    {"range": [71, 83], "result": "cop_tip_off"},
+    {"range": [84, 94], "result": "informant_present"},
+    {"range": [95, 100], "result": "double_cross"}
+  ]
+}
