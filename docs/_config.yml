@@ -1,0 +1,7 @@
+title: Whiskey Hollow
+description: A Prohibition-era Kansas City bootlegger roguelike
+theme: jekyll-theme-midnight
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
